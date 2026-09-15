@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap">
 <style>
 :root{--bg:#fbf8f1;--ink:#22201c;--soft:#6b665c;--rule:#d9d2c3;--card:#fffdf8;
-  --H:#2f7d5b;--C:#2b5f8f;--D:#b9761f;--L:#a63a2f;--X:#7a7a7a;--accent:#a63a2f;
+  --H:#2f7d5b;--C:#2b5f8f;--D:#b9761f;--L:#a63a2f;--N:#6c3483;--X:#7a7a7a;--accent:#a63a2f;
   --serif:"Spectral",Georgia,serif;--sans:"Work Sans",Helvetica,Arial,sans-serif;--mono:"Courier Prime",Menlo,monospace}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;
@@ -18,7 +18,7 @@ h2{font-family:var(--sans);font-weight:600;font-size:clamp(20px,3vw,26px);margin
 .note{font-family:var(--sans);color:var(--soft);font-size:14px;max-width:44em;line-height:1.5}
 .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin:16px 0}
 .field{display:flex;flex-direction:column;gap:4px;font-family:var(--sans);font-size:13px}
-select{font-family:var(--sans);font-size:14px;padding:7px 9px;background:var(--card);border:1px solid var(--ink);color:var(--ink);min-width:180px}
+select{font-family:var(--sans);font-size:14px;padding:7px 9px;background:var(--card);border:1px solid var(--ink);color:var(--ink);min-width:180px;max-width:100%}
 .seg{display:inline-flex;border:1px solid var(--ink);overflow:hidden}
 .seg button{font-family:var(--sans);font-size:13px;padding:7px 12px;background:var(--card);border:0;border-right:1px solid var(--ink);color:var(--ink);cursor:pointer}
 .seg button:last-child{border-right:0}
@@ -43,7 +43,7 @@ footer{padding:26px 0 0;font-family:var(--sans);font-size:13px;color:var(--soft)
 <header>
   <div class="kicker">Medicare · the cost of aging · public calculator</div>
   <h1>The Long Road</h1>
-  <p class="lede">Turn 65, and the rest of your life runs along one of a few health paths: staying well, living with chronic illness, needing help with daily tasks, needing long-term care. Each path costs Medicare and costs you differently. Pick where you start and see where the road tends to go, what it costs, how bad the worst stretches get, and what happens if Medicare's hospital fund runs short in 2033.</p>
+  <p class="lede">Turn 65, and the rest of your life runs along one of a few health paths: staying well, living with chronic illness, needing help with daily tasks, needing heavy help at home, or living in a nursing home. Each path costs Medicare and costs you differently. Pick where you start and see how long the road tends to run, what it costs, how bad the worst stretches get, how often it ends on Medicaid, and what happens if Medicare's hospital fund runs short in 2033.</p>
 </header>
 
 <section>
@@ -55,7 +55,7 @@ footer{padding:26px 0 0;font-family:var(--sans);font-size:13px;color:var(--soft)
   <p class="big" id="path-sentence"></p>
   <div class="tiles" id="tiles"></div>
   <div class="chart" id="years-chart"></div>
-  <p class="note">Years expected in each state from age 65, from a five-state model of health transitions fitted to 213,552 intervals between Health and Retirement Study interviews (1998 to 2022), with deaths dated to the month.</p>
+  <p class="note">Long-term care here means three or more limitations in daily activities (walking across a room, dressing, bathing, eating, getting in or out of bed) while living at home, or living in a nursing home, at any interview. The chart shows years in each state for a person with no college education who is non-Hispanic white; the numbers above use the full population mix of education and race-ethnicity. From a six-state model of health transitions fitted to Health and Retirement Study interviews from 1998 to 2022.</p>
 </section>
 
 <section>
@@ -63,20 +63,29 @@ footer{padding:26px 0 0;font-family:var(--sans);font-size:13px;color:var(--soft)
   <div class="tiles" id="cost-tiles"></div>
   <div class="chart" id="oop-chart"></div>
   <p class="note" id="oop-note"></p>
+  <p class="note">Out-of-pocket care costs include hospital, nursing-home, doctor, dental, drug and home-care spending, and the last year of life. They exclude Medigap and Medicare Advantage premiums, which are shown nowhere on this page, and anything Medicaid pays. Medicare spending leaves out nursing-facility, hospice and institutional care, which the survey behind it does not cover, so it is a lower bound. Spending is persistent from year to year, as the survey shows, which is what makes the worst cases as heavy as they are.</p>
 </section>
 
 <section>
-  <h2>3. If the hospital fund runs short</h2>
+  <h2>3. Income and Medicaid</h2>
+  <div class="chart" id="income-table"></div>
+  <p class="note" id="income-note"></p>
+</section>
+
+<section>
+  <h2>4. If the hospital fund runs short</h2>
   <p class="note" id="scen-note"></p>
   <div class="controls"><div class="field"><label for="scen">Scenario</label><select id="scen"></select></div></div>
   <div class="tiles" id="scen-tiles"></div>
-  <div class="chart" id="spend-table"></div>
+  <p class="note">A shortfall reaches households only through a channel: thinner supplemental or Medicare Advantage benefits, higher cost sharing, or care that is not delivered and has to be bought. The scenarios assume a share of the gap reaches people who are not on Medicaid; for people on Medicaid, it pays Medicare cost sharing.</p>
 </section>
 
 <section>
-  <h2>4. Does the model get mortality right?</h2>
+  <h2>5. How good is the model?</h2>
   <div class="chart" id="check-table"></div>
-  <p class="note">Life expectancy at 65. The fitted model pools deaths from 1998 to 2022, when mortality was higher than in 2023, so it runs a year or more short. The calculator scales death rates by age and sex to match the 2023 US period life table, keeping each health state's relative risk, and also shows that each state's share of the population by age matches the survey.</p>
+  <p class="note">Life expectancy at 65. The fitted model pools 1998 to 2022, when mortality was higher than in 2023; the calculator scales death rates by age and sex to match the 2023 US period life table while keeping each health state's relative risk.</p>
+  <div class="chart" id="lit-table"></div>
+  <p class="note">Against published estimates, converted to 2024 dollars. The bases differ, as the second column says, so these are checks on scale rather than exact matches.</p>
 </section>
 
 <footer id="foot"></footer>
@@ -86,41 +95,52 @@ footer{padding:26px 0 0;font-family:var(--sans);font-size:13px;color:var(--soft)
 (function(){
 const D = JSON.parse(document.getElementById("model-data").textContent);
 const $ = id => document.getElementById(id);
-const money = v => (v < 0 ? "-$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
+const money = v => v === null || v === undefined ? "–" : (v < 0 ? "-$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
 const NS = "http://www.w3.org/2000/svg";
 const el = (t, a, p, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt !== undefined) e.textContent = txt; if (p) p.appendChild(e); return e; };
-const COL = {H:"#2f7d5b", C:"#2b5f8f", D:"#b9761f", L:"#a63a2f", X:"#7a7a7a"};
+const COL = {H:"#2f7d5b", C:"#2b5f8f", D:"#b9761f", L:"#a63a2f", N:"#6c3483", X:"#7a7a7a"};
+const SHORT = {H:"Healthy", C:"Chronic illness", D:"Disability", L:"Severe, at home", N:"Nursing home"};
+const CODES = Object.keys(D.states);
 let sex = "male", entry = "Population mix";
-const entries = ["Population mix", "H", "C", "D", "L"];
-entries.forEach(e => { const o = document.createElement("option"); o.value = e; o.textContent = e === "Population mix" ? "Typical 65-year-old (population mix)" : D.states[e]; $("entry").appendChild(o); });
+const options = ["Population mix"].concat(CODES.map(k => D.states[k]));
+options.forEach(e => { const o = document.createElement("option"); o.value = e; o.textContent = e === "Population mix" ? "Typical 65-year-old (population mix)" : e; $("entry").appendChild(o); });
 [...$("sex").children].forEach(b => b.onclick = () => { sex = b.dataset.v; [...$("sex").children].forEach(c => c.setAttribute("aria-pressed", c === b)); draw(); });
 $("entry").onchange = () => { entry = $("entry").value; draw(); };
 const find = (arr, f) => arr.find(f) || {};
 
-function drawYears(exp){
-  const states = ["H","C","D","L"];
+function yearsFor(){
+  if (entry !== "Population mix") return find(D.years, r => r.sex === sex && r.entry === entry).years || {};
+  // population mix: weight entry-state rows by the share of lives starting there
+  const out = {}; CODES.forEach(k => out[k] = 0);
+  const rows = D.years.filter(r => r.sex === sex);
+  const n = rows.length || 1;
+  rows.forEach(r => CODES.forEach(k => out[k] += (r.years[k] || 0) / n));
+  return out;
+}
+
+function drawYears(){
+  const yrs = yearsFor();
   const W = 860, H = 90, left = 10;
-  const total = states.reduce((s, k) => s + (exp.years[k] || 0), 0);
+  const total = CODES.reduce((s, k) => s + (yrs[k] || 0), 0) || 1;
   const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Years expected in each state"});
   let x = left;
-  states.forEach(k => {
-    const w = (W - 20) * (exp.years[k] || 0) / total;
+  CODES.forEach(k => {
+    const w = (W - 20) * (yrs[k] || 0) / total;
     el("rect", {x, y: 18, width: w, height: 36, fill: COL[k]}, svg);
-    if (w > 46) el("text", {x: x + w / 2, y: 41, "text-anchor": "middle", fill: "#fff", "font-weight": 600}, svg, `${exp.years[k].toFixed(1)} y`);
-    const short = {H: "Healthy", C: "Chronic illness", D: "Disability", L: "LTC need"}[k];
-    el("text", {x: x + w / 2, y: 72, "text-anchor": "middle", "font-size": 10.5}, svg, w > 58 ? short : "");
+    if (w > 46) el("text", {x: x + w / 2, y: 41, "text-anchor": "middle", fill: "#fff", "font-weight": 600}, svg, `${(yrs[k] || 0).toFixed(1)} y`);
+    el("text", {x: x + w / 2, y: 72, "text-anchor": "middle", "font-size": 10.5}, svg, w > 70 ? SHORT[k] : "");
     x += w;
   });
-  el("text", {x: left, y: 12, "font-size": 11}, svg, `Expected ${total.toFixed(1)} more years from 65`);
+  el("text", {x: left, y: 12, "font-size": 11}, svg, entry === "Population mix" ? "Years in each state, averaged over starting states" : "Years in each state from 65");
   $("years-chart").replaceChildren(svg);
 }
 
 function drawHist(){
   const edges = D.oop_histogram.edges_k;
-  const share = D.oop_histogram.share[`${sex}|${entry}`];
+  const share = D.oop_histogram.share[`${sex}|${entry}`] || [];
   const t = find(D.tail, r => r.sex === sex && r.entry === entry && r.level === 0.95);
   const W = 860, H = 230, L = 40, B = 40;
-  const max = Math.max(...share);
+  const max = Math.max(...share, 1e-9);
   const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Distribution of lifetime out-of-pocket cost"});
   const bw = (W - L - 10) / share.length;
   share.forEach((s, i) => {
@@ -130,47 +150,56 @@ function drawHist(){
     if (i % 5 === 0) el("text", {x: x, y: H - B + 16, "font-size": 10}, svg, `$${edges[i]}k`);
   });
   el("text", {x: W - 10, y: H - B + 16, "font-size": 10, "text-anchor": "end"}, svg, `$${edges[edges.length - 1]}k+`);
-  el("text", {x: L, y: 14, "font-size": 11}, svg, `Present value of lifetime out-of-pocket cost for care, ${D.meta.n_lives.toLocaleString("en-US")} simulated lives. Red: the worst 5%, averaging ${money(t.cvar)}.`);
+  el("text", {x: L, y: 14, "font-size": 11}, svg, `Present value of lifetime out-of-pocket care cost, ${D.meta.n_lives.toLocaleString("en-US")} simulated lives. Red: the worst 5%, averaging ${money(t.cvar)}.`);
   $("oop-chart").replaceChildren(svg);
 }
 
 function draw(){
-  const exp = find(D.expectancy, r => r.sex === sex && r.entry === entry);
   const life = find(D.lifetime, r => r.sex === sex && r.entry === entry);
   const tail = find(D.tail, r => r.sex === sex && r.entry === entry && r.level === 0.95);
-  const label = entry === "Population mix" ? `a typical ${sex} 65-year-old` : `a ${sex} 65-year-old who is ${D.states[entry].toLowerCase().replace("long-term-care need","in need of long-term care")}`;
-  $("path-sentence").innerHTML = `For ${label}: about <strong>${life.e65}</strong> more years, and a <strong>${life.ever_ltc}%</strong> chance of needing long-term care at some point.`;
-  $("tiles").innerHTML = [[life.e65 + " years", "expected remaining life"], [life.ever_ltc + "%", "chance of ever needing long-term care"]]
+  const who = entry === "Population mix" ? `a typical ${sex} 65-year-old` : `a ${sex} 65-year-old starting in "${entry.toLowerCase()}"`;
+  $("path-sentence").innerHTML = `For ${who}: about <strong>${life.e65}</strong> more years, a <strong>${life.ever_ltc}%</strong> chance of needing long-term care at some point, and a <strong>${life.ever_medicaid}%</strong> chance of being on Medicaid at some point.`;
+  $("tiles").innerHTML = [[life.e65 + " years", "expected remaining life"], [life.ever_ltc + "%", "chance of ever needing long-term care"],
+    [life.years_ltc + " years", "expected years needing long-term care"], [life.ever_medicaid + "%", "chance of ever being on Medicaid"]]
     .map(([b, s]) => `<div class="tile"><b>${b}</b><span>${s}</span></div>`).join("");
-  drawYears(exp);
-  $("cost-tiles").innerHTML = [[money(life.medicare), "Medicare pays over your life (present value)"],
+  drawYears();
+  $("cost-tiles").innerHTML = [[money(life.medicare), "Medicare pays over your life (present value, lower bound)"],
     [money(life.oop_mean), "you pay out of pocket for care, on average"], [money(life.oop_median), "you pay for care, typical (median) case"],
     [money(tail.cvar), "you pay for care in the worst 5% of paths, on average", "warn"],
-    [money(life.premium), "Part B premiums on top, over your life"]]
+    [money(life.premium), "Part B and Part D base premiums on top"]]
     .map(([b, s, c]) => `<div class="tile ${c || ""}"><b>${b}</b><span>${s}</span></div>`).join("");
-  $("oop-note").textContent = `Of the lives in that worst 5%, ${tail.ltc_in_tail}% passed through long-term-care need, against ${life.ever_ltc}% of all lives. The tail is mostly the long-term-care path.`;
+  $("oop-note").textContent = `Of the lives in that worst 5%, ${tail.ltc_in_tail}% needed long-term care at some point, for ${tail.years_ltc_in_tail} years on average, against ${life.ever_ltc}% of all lives.`;
   drawHist();
+  drawIncome();
   drawScen();
+}
+
+function drawIncome(){
+  const rows = D.income.filter(x => x.sex === sex);
+  const sd = D.spend_down.filter(x => x.sex === sex && x.scenario.startsWith("S0"));
+  $("income-table").innerHTML = "<table><thead><tr><th>Household income at 65</th><th>Median savings (not counting home)</th><th>On Medicaid at 65</th><th>Spend down to Medicaid later</th><th>Typical age</th><th>Care costs, average</th><th>Worst 5%</th></tr></thead><tbody>" +
+    ["low", "middle", "high"].map(t => { const r = rows.find(x => x.tertile === t) || {}; const s = sd.find(x => x.tertile === t) || {};
+      return `<tr><td>${t}</td><td>${money(r.median_assets)}</td><td>${s.medicaid65}%</td><td>${s.spend_down}%</td><td>${s.age || "–"}</td><td>${money(r.oop_mean)}</td><td>${money(r.cvar95)}</td></tr>`; }).join("") + "</tbody></table>";
+  $("income-note").textContent = `Households pay care costs out of income up to a tenth of it and out of savings beyond that. Someone who needs long-term care and whose savings fall below $${D.meta.asset_limit.toLocaleString("en-US")} goes onto Medicaid, which then pays most of the cost and the Medicare premiums. Home equity is not counted. Low-income households pay less out of pocket largely because Medicaid pays for more of them.`;
 }
 
 const scenNames = [...new Set(D.scenarios.map(r => r.scenario))];
 scenNames.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; $("scen").appendChild(o); });
 $("scen").value = scenNames.find(s => s.includes("shift 50%")) || scenNames[0];
 $("scen").onchange = drawScen;
-$("scen-note").textContent = `The 2026 Trustees Report projects the Hospital Insurance trust fund to be depleted in the ${D.meta.depletion}, after which revenue covers ${Math.round(100 * D.meta.payable)}% of scheduled Part A benefits. The report assumes benefits are paid in full anyway. These scenarios ask what happens to households if they are not.`;
+const path = D.meta.payable_path;
+$("scen-note").textContent = `The 2026 Trustees Report projects the Hospital Insurance trust fund to be depleted in the ${D.meta.depletion}, after which revenue covers ${Math.round(100 * path["2033"])}% of scheduled Part A benefits, ${Math.round(100 * path["2050"])}% by 2050 and ${Math.round(100 * path["2100"])}% by 2100. Part A pays about ${Math.round(100 * D.meta.hi_share)}% of Medicare spending per beneficiary. The report assumes benefits are paid in full anyway; these scenarios ask what happens to households if they are not. Shown for the population mix.`;
 function drawScen(){
-  const r = find(D.scenarios, x => x.sex === sex && x.entry === entry && x.scenario === $("scen").value);
+  const r = find(D.scenarios, x => x.sex === sex && x.scenario === $("scen").value);
   $("scen-tiles").innerHTML = [[money(r.d_mean || 0), "change in what you pay, average"], [money(r.d_cvar95 || 0), "change in the worst 5%", "warn"], [money(r.cvar95 || 0), "worst 5% under this scenario"]]
     .map(([b, s, c]) => `<div class="tile ${c || ""}"><b>${b}</b><span>${s}</span></div>`).join("");
-  const rows = D.spend_down.filter(x => x.sex === sex);
-  $("spend-table").innerHTML = "<table><thead><tr><th>Household income at 65</th><th>Median assets</th><th>No savings at 65</th><th>Care costs use up savings, baseline</th><th>Shortfall shifted 50%</th><th>Typical age it happens</th></tr></thead><tbody>" +
-    ["low", "middle", "high"].map(t => { const a = rows.find(x => x.tertile === t && x.scenario.startsWith("S0")) || {}; const b = rows.find(x => x.tertile === t && x.scenario.startsWith("S1")) || {};
-      return `<tr><td>${t}</td><td>${money(a.assets || 0)}</td><td>${a.nopos}%</td><td>${a.pct}%</td><td>${b.pct}%</td><td>${a.age}</td></tr>`; }).join("") + "</tbody></table>" +
-    `<p class="note">Of households with savings at 65, the share whose cumulative out-of-pocket care costs reach those savings. No investment returns or income are counted, so this is a measure of exposure, not a forecast.</p>`;
 }
 
 $("check-table").innerHTML = "<table><thead><tr><th>Sex</th><th>Fitted model</th><th>After calibration</th><th>US life table 2023</th></tr></thead><tbody>" +
   D.mortality_check.map(r => `<tr><td>${r.sex}</td><td>${r.fitted}</td><td>${r.model}</td><td>${r.life_table}</td></tr>`).join("") + "</tbody></table>";
+$("lit-table").innerHTML = "<table><thead><tr><th>Published estimate</th><th>Basis</th><th>Published</th><th>Model, men</th><th>Model, women</th></tr></thead><tbody>" +
+  D.literature.map(r => { const isPct = r.quantity.startsWith("Ever"); const f = v => isPct ? `${v}%` : money(v);
+    return `<tr><td>${r.source}: ${r.quantity}</td><td>${r.basis}</td><td>${f(r.published)}</td><td>${f(r.male)}</td><td>${f(r.female)}</td></tr>`; }).join("") + "</tbody></table>";
 $("foot").innerHTML = `Sources: ${D.meta.sources}. ${D.meta.dollars}. From the paper <em>${D.meta.paper}</em> by ${D.meta.author}; code at <a href="${D.meta.repository}">${D.meta.repository.replace("https://","")}</a>. Everything here is an aggregate model output; no survey microdata is included or sent anywhere. Updated ${D.meta.generated}.`;
 draw();
 })();

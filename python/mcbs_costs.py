@@ -119,8 +119,23 @@ def main():
         # Part A share: inpatient plus home health events over all events.
         # SNF and hospice are outside the Cost Supplement PUF, so this
         # understates Part A for the frail.
+        # Inpatient plus home health, as a share of all-payer spending and of
+        # Medicare spending. Neither is the Hospital Insurance share of
+        # Medicare: skilled nursing and hospice, both Part A, are outside the
+        # Cost Supplement, and most home health is paid by Part B. The
+        # Trustees' per-beneficiary HI share (config.HI_SHARE_OF_MEDICARE) is
+        # the object the scenarios use; this is the community lower bound.
         parta = (s["PAMTIP"] + s["PAMTHH"]).to_numpy(float)
-        row["part_a_share_of_total"] = wmean(parta, s["CSPUFWGT"].to_numpy(float)) / row["pamttot_mean"]
+        parta_mean = wmean(parta, s["CSPUFWGT"].to_numpy(float))
+        row["part_a_share_of_total"] = parta_mean / row["pamttot_mean"]
+        row["part_a_share_of_medicare"] = parta_mean / row["medicare_total_mean"]
+        # Fee-for-service beneficiaries only: Medicare Advantage payments in
+        # the PUF are capitation amounts, not costs incurred, so the FFS-only
+        # mean is the cost-based alternative used in robustness.
+        ffs = s[s["in_ma"] == 0]
+        row["n_ffs"] = int(len(ffs))
+        row["medicare_ffs_only_mean"], row["medicare_ffs_only_se"] = brr_se(
+            ffs["medicare_total"].to_numpy(float), ffs, wmean)
         rows.append(row)
     t3a = pd.DataFrame(rows)
     t3a.to_csv(config.TABLES / "table3a_mcbs_costs.csv", index=False)

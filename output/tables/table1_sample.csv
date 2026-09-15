@@ -1,11 +1,16 @@
 quantity,value
 Respondents with at least one classified interview,40354
 Person-interviews with a classified state,237944
-Intervals between interviews,197590
-Deaths with an exact date,15962
-"Mean interval length, years",2.0455542834219926
+Intervals between interviews,197258
+Deaths,16160
+"Deaths dated to the year only, placed at mid-year",139
+Known-alive censored observations,8548
+Person-years in censored observations,39760.54166666666
+Observations dropped for missing race,375
+"Mean interval length, years",2.144123424308227
 Waves,4-16 (1998-2022)
-"Weighted share of person-interviews in Healthy, %",16.526358316171134
-"Weighted share of person-interviews in Chronic illness, %",68.6229347907172
-"Weighted share of person-interviews in Disability, %",10.786211299206949
-"Weighted share of person-interviews in Long-term-care need, %",4.064495593904717
+"Weighted share of person-interviews in Healthy, %",16.265868540457454
+"Weighted share of person-interviews in Chronic illness, %",67.5412946283496
+"Weighted share of person-interviews in Disability, %",10.616198177841822
+"Weighted share of person-interviews in Severe disability at home, %",3.9994982728859867
+"Weighted share of person-interviews in Nursing home, %",1.5771403804651303

@@ -1,9 +1,9 @@
 """
-Check that the manuscript's headline numbers still match the analysis output.
+Check that the manuscript's numbers still match the analysis output.
 
 The prose is written by hand, so a rerun that moves an estimate leaves the text
 stale unless someone notices. This reads the current tables, formats each
-headline figure the way the manuscript writes it, and fails if the string is
+quoted figure the way the manuscript writes it, and fails if the string is
 absent. It also checks that every table cited is rendered and vice versa, that
 every embedded figure exists, that no placeholder is left, and that the prose
 carries no em dashes. It then writes the exact body word count into the
@@ -23,168 +23,332 @@ import config
 
 MS = config.ROOT / "manuscript" / "Paper5_manuscript.md"
 T = config.TABLES
+M, F, P = "male", "female", "Population mix"
+LTC_LABEL = {"H": "Healthy", "C": "Chronic illness", "D": "Disability",
+             "L": "Severe disability at home", "N": "Nursing home"}
 
 
 def d(x):
     return f"${x:,.0f}"
 
 
-def load():
-    t1 = pd.read_csv(T / "table1_sample.csv").set_index("quantity")["value"]
-    t2 = pd.read_csv(T / "table2_intensities.csv")
-    hr = t2.dropna(subset=["hazard_ratio"]).set_index(["transition", "term"])
+def pc(x, n=1):
+    return f"{x:.{n}f}%"
+
+
+def sample_checks(t1):
+    v = lambda k: float(t1[k])
+    return {
+        "respondents": f"{int(v('Respondents with at least one classified interview')):,} respondents",
+        "person-interviews": f"{int(v('Person-interviews with a classified state')):,} classified person-interviews",
+        "transitions": f"{int(v('Intervals between interviews')):,} transitions",
+        "interval length": f"mean interval of {v('Mean interval length, years'):.2f} years",
+        "deaths": f"{int(v('Deaths')):,} deaths are dated",
+        "year-only deaths": f"{int(v('Deaths dated to the year only, placed at mid-year'))} of them to the year only",
+        "censored": f"{int(v('Known-alive censored observations')):,} observations are censored",
+        "censored years": f"{v('Person-years in censored observations'):,.0f} person-years",
+        "dropped": f"{int(v('Observations dropped for missing race'))} observations are dropped",
+        "share H": pc(v('Weighted share of person-interviews in Healthy, %')),
+        "share C": pc(v('Weighted share of person-interviews in Chronic illness, %')),
+        "share D": pc(v('Weighted share of person-interviews in Disability, %')),
+        "share L": pc(v('Weighted share of person-interviews in Severe disability at home, %')),
+        "share N": pc(v('Weighted share of person-interviews in Nursing home, %')),
+    }
+
+
+def cost_checks():
     t3d = pd.read_csv(T / "table3d_medicare_by_state.csv").set_index(["state", "age_band"])
     t3c = pd.read_csv(T / "table3c_oop_by_state.csv").set_index(["state", "age_band", "sex"])
-    t3e = pd.read_csv(T / "table3e_end_of_life_oop.csv").set_index(["age_band", "sex"])
+    t3e = pd.read_csv(T / "table3e_end_of_life_oop.csv").set_index(["group", "age_band", "sex"])
     t3a = pd.read_csv(T / "table3a_mcbs_costs.csv").set_index("cell")
+    med = lambda s, b: d(t3d.loc[(s, b), "medicare_annual"])
+    oop = lambda s, x: d(t3c.loc[(s, "75+", x), "oop_mean"])
+    c = {
+        "mcbs n": f"{int(t3a.loc['All', 'n']):,} beneficiary-years",
+        "mcbs mean": f"{d(t3a.loc['All', 'medicare_total_mean'])} (standard error {d(t3a.loc['All', 'medicare_total_se'])})",
+        "mcbs ma": f"{100 * t3a.loc['All', 'share_in_ma']:.0f}% of beneficiary-years",
+        "scale factors": (f"factors of {t3d.loc[('C', '65-74'), 'mcbs_scale_factor']:.2f} and "
+                          f"{t3d.loc[('C', '75+'), 'mcbs_scale_factor']:.2f}"),
+        "income factor": f"{100 * (t3d.loc[('C', '65-74'), 'income_factor_low_tertile'] - 1):.0f}% higher in the lowest income tertile",
+        "eol n": f"{int(pd.read_csv(T / 'table3e_end_of_life_oop.csv')['n'].sum()):,} decedents",
+        "medicare 65-74": (f"from {med('H', '65-74')} in H through {med('C', '65-74')} in C, "
+                           f"{med('D', '65-74')} in D and {med('L', '65-74')} in L to {med('N', '65-74')} in N"),
+        "medicare 75+": f"from {med('H', '75+')} to {med('N', '75+')}",
+        "oop N 75+": f"{oop('N', M)} for men and {oop('N', F)} for women in N",
+        "oop N p99": (f"99th percentiles of {d(t3c.loc[('N', '75+', M), 'oop_p99'])} and "
+                      f"{d(t3c.loc[('N', '75+', F), 'oop_p99'])}"),
+        "medicaid N": (f"{t3c.loc[('N', '75+', M), 'medicaid_pct']:.0f}% and "
+                       f"{t3c.loc[('N', '75+', F), 'medicaid_pct']:.0f}% of nursing-home person-years"),
+        "eol ltc": (f"{d(t3e.loc[('ltc', '75+', M), 'eol_mean'])} for men and "
+                    f"{d(t3e.loc[('ltc', '75+', F), 'eol_mean'])} for women"),
+        "eol other": (f"{d(t3e.loc[('other', '75+', M), 'eol_mean'])} and "
+                      f"{d(t3e.loc[('other', '75+', F), 'eol_mean'])}"),
+    }
+    per = T / "table3g_oop_persistence.csv"
+    if per.exists():
+        p = pd.read_csv(per).iloc[0]
+        c["persistence"] = (f"permanent share of {p['permanent_share']:.3f} and an AR(1) coefficient of "
+                            f"{p['annual_decay']:.3f}")
+    return c
+
+
+def model_checks():
+    t7c = pd.read_csv(T / "table7c_mortality_calibration.csv").set_index("sex")
+    c = {
+        "e65 uncalibrated": (f"{t7c.loc[M, 'e65_uncalibrated']:.2f} years for men and "
+                             f"{t7c.loc[F, 'e65_uncalibrated']:.2f} for women"),
+        "multiplier male": (f"from {t7c.loc[M, 'death_multiplier_at_65']:.3f} at 65 to "
+                            f"{t7c.loc[M, 'death_multiplier_at_95']:.3f} at 95 for men"),
+        "multiplier female": (f"from {t7c.loc[F, 'death_multiplier_at_65']:.3f} to "
+                              f"{t7c.loc[F, 'death_multiplier_at_95']:.3f} for women"),
+    }
+    return c
+
+
+def validation_checks():
+    g = pd.read_csv(T / "table7g_goodness_of_fit_summary.csv").set_index("from")
+    t7 = pd.read_csv(T / "table7_mortality_validation.csv").set_index("sex")
+    q = pd.read_csv(T / "table7_qx_validation.csv")
+    pv = pd.read_csv(T / "table7b_prevalence_validation.csv")
+    t7d = pd.read_csv(T / "table7d_spending_validation.csv").set_index("age_band")
+    t7h = pd.read_csv(T / "table7h_medicaid_validation.csv").set_index("sex")
+    lit = pd.read_csv(T / "table7e_literature_comparison.csv")
+    lit_row = lambda src, frag: lit[(lit["source"].str.contains(src)) & (lit["quantity"].str.contains(frag))].iloc[0]
+    k5, k1 = lit_row("Kelley", "last five years"), lit_row("Marshall", "last year")
+    k1p = lit_row("Marshall", "95th")
+    jones = lit_row("Jones", "mean")
+    nh = lit_row("Hurd", "Ever a nursing-home stay")
+    return {
+        "gof H": f"largest gap {g.loc['H', 'max_abs_gap_pts']:.1f} points",
+        "gof C": f"C ({g.loc['C', 'max_abs_gap_pts']:.1f})",
+        "gof D": f"D ({g.loc['D', 'max_abs_gap_pts']:.1f})",
+        "gof L": (f"expects {g.loc['L', 'exp_L_pct']:.1f}% to remain against {g.loc['L', 'obs_L_pct']:.1f}% observed "
+                  f"and {g.loc['L', 'exp_X_pct']:.1f}% to die against {g.loc['L', 'obs_X_pct']:.1f}%"),
+        "gof N": (f"expects {g.loc['N', 'exp_N_pct']:.1f}% to remain against {g.loc['N', 'obs_N_pct']:.1f}% and "
+                  f"{g.loc['N', 'exp_X_pct']:.1f}% to die against {g.loc['N', 'obs_X_pct']:.1f}%, a gap of "
+                  f"{g.loc['N', 'max_abs_gap_pts']:.1f} points"),
+        "e65 calibrated": (f"{t7.loc[M, 'model_e65']:.2f} years for men and {t7.loc[F, 'model_e65']:.2f} for women "
+                           f"against {t7.loc[M, 'life_table_e65_2023']:.2f} and {t7.loc[F, 'life_table_e65_2023']:.2f}"),
+        "qx ratios": (f"ratios {q['ratio_to_life_table'].min():.2f} to {q['ratio_to_life_table'].max():.2f}"),
+        "prevalence gap": f"largest gap in any cell is {(pv['model_pct'] - pv['observed_pct']).abs().max():.1f} percentage points",
+        "spending ratio": (f"{t7d.loc['65-74', 'ratio_to_mcbs']:.2f} and {t7d.loc['75+', 'ratio_to_mcbs']:.2f} times "
+                           f"the MCBS band mean"),
+        "trustees ratio": (f"{t7d.loc['65-74', 'ratio_to_trustees']:.2f} and {t7d.loc['75+', 'ratio_to_trustees']:.2f} of "
+                           f"Medicare's own per-beneficiary spending in 2024 "
+                           f"({d(t7d.loc['65-74', 'trustees_per_beneficiary_2024'])})"),
+        "medicaid validation": (f"{t7h.loc[M, 'model_ltc_person_years_on_medicaid_pct']:.1f}% of men's and "
+                                f"{t7h.loc[F, 'model_ltc_person_years_on_medicaid_pct']:.1f}% of women's long-term-care "
+                                f"person-years are on Medicaid, against "
+                                f"{t7h.loc[M, 'hrs_ltc_person_years_on_medicaid_pct']:.1f}% in HRS"),
+        "kelley": (f"{d(k5['model_male'])} for men and {d(k5['model_female'])} for women against Kelley et al. (2013) "
+                   f"at {d(k5['published_2024_dollars'])}"),
+        "marshall": (f"last-year spending of {d(k1['model_male'])} and {d(k1['model_female'])} against Marshall, "
+                     f"McGarry and Skinner (2011) at {d(k1['published_2024_dollars'])}"),
+        "marshall p95": (f"({d(k1p['model_male'])} and {d(k1p['model_female'])}) bracketing theirs "
+                         f"({d(k1p['published_2024_dollars'])})"),
+        "jones": (f"{d(jones['published_2024_dollars'])} per household including Medicaid payments, against "
+                  f"{d(jones['model_male'])} and {d(jones['model_female'])}"),
+        "nursing home use": (f"{nh['published']:.0f}% of people have a nursing-home stay, against "
+                             f"{nh['model_male']:.0f}% of men and {nh['model_female']:.0f}% of women"),
+    }
+
+
+def result_checks():
+    t2 = pd.read_csv(T / "table2_intensities.csv")
+    hr = t2.dropna(subset=["hazard_ratio"]).set_index(["transition", "term"])
+    t2c = pd.read_csv(T / "table2c_health_expectancies.csv")
+    ref = t2c[(t2c["college"] == 0) & (t2c["nonwhite"] == 0)].set_index(["sex", "entry_state"])
     t4 = pd.read_csv(T / "table4_lifetime_costs.csv").set_index(["sex", "entry_state"])
-    t4b = pd.read_csv(T / "table4b_parameter_uncertainty.csv").set_index(["sex", "entry_state"])
     t4c = pd.read_csv(T / "table4c_lifetime_by_income.csv").set_index(["sex", "income_tertile"])
     t5 = pd.read_csv(T / "table5_tail_risk.csv").set_index(["sex", "entry_state", "level"])
-    t6 = pd.read_csv(T / "table6_scenarios.csv")
-    t6 = t6[t6["entry_state"] == "Population mix"].set_index(["sex", "scenario"])
-    t6b = pd.read_csv(T / "table6b_spend_down.csv").set_index(["sex", "income_tertile", "scenario"])
-    t7 = pd.read_csv(T / "table7_mortality_validation.csv").set_index("sex")
-    t7q = pd.read_csv(T / "table7_qx_validation.csv").set_index(["sex", "age"])
-    t7b = pd.read_csv(T / "table7b_prevalence_validation.csv").set_index(["sex", "age_band", "state"])
-    t7c = pd.read_csv(T / "table7c_mortality_calibration.csv").set_index("sex")
-    t7d = pd.read_csv(T / "table7d_spending_validation.csv").set_index("age_band")
-
-    M, F, P = "male", "female", "Population mix"
-    s1 = lambda x: f"S1 Part A payable 89% from 2033, shift {x}%"
-    s2, s3 = "S2 shortfall on long-term-care state", "S3 real growth 1.7% and shift 50%"
-    n_eol = int(t3e["n"].sum())
+    age = lambda j: hr.loc[(j, "age_per_10y"), "hazard_ratio"]
+    fem = lambda j: hr.loc[(j, "female"), "hazard_ratio"]
     lr = t2["lr_test_vs_base"].dropna().iloc[0]
+    df = int(t2["lr_df"].dropna().iloc[0])
     c = {
-        "respondents": f"{int(float(t1['Respondents with at least one classified interview'])):,} respondents",
-        "person-interviews": f"{int(float(t1['Person-interviews with a classified state'])):,} classified",
-        "intervals": f"{int(float(t1['Intervals between interviews'])):,} intervals",
-        "deaths": f"{int(float(t1['Deaths with an exact date'])):,} deaths",
-        "share H": f"{float(t1['Weighted share of person-interviews in Healthy, %']):.1f}% of person-interviews",
-        "share L": f"{float(t1['Weighted share of person-interviews in Long-term-care need, %']):.1f}% in L",
-        "total intervals": "213,552 intervals",
-        "exit decedents": f"{n_eol:,} decedents",
-        "MCBS n": f"{int(t3a.loc['All', 'n']):,} beneficiary-years",
-        "MCBS Medicare": f"{d(t3a.loc['All', 'medicare_total_mean'])} (standard error {d(t3a.loc['All', 'medicare_total_se'])})",
-        "MA share": f"{100 * t3a.loc['All', 'share_in_ma']:.1f}% of beneficiary-years",
-        "Part A share": f"{100 * t3a.loc['All', 'part_a_share_of_total']:.1f}% of all-payer",
-        "LR": f"{lr:,.1f} on 24 degrees of freedom",
-        "HR age H-X": f"{hr.loc[('H to X', 'age_per_10y'), 'hazard_ratio']:.2f} per decade",
-        "HR age C-X": f"{hr.loc[('C to X', 'age_per_10y'), 'hazard_ratio']:.2f} from C",
-        "HR age D-X": f"D ({hr.loc[('D to X', 'age_per_10y'), 'hazard_ratio']:.2f})",
-        "HR age L-X": f"L ({hr.loc[('L to X', 'age_per_10y'), 'hazard_ratio']:.2f})",
-        "HR college C-D": f"C to D (hazard ratio {hr.loc[('C to D', 'college'), 'hazard_ratio']:.2f})",
-        "HR college C-L": f"C to L ({hr.loc[('C to L', 'college'), 'hazard_ratio']:.2f})",
-        "HR nonwhite C-L": f"C to L ({hr.loc[('C to L', 'nonwhite'), 'hazard_ratio']:.2f})",
-        "HR C-L age": f"({hr.loc[('C to L', 'age_per_10y'), 'hazard_ratio']:.2f} per decade, interval {hr.loc[('C to L', 'age_per_10y'), 'hr_lo']:.2f} to {hr.loc[('C to L', 'age_per_10y'), 'hr_hi']:.2f})",
-        "e65 fitted M": f"{t7.loc[M, 'model_e65_uncalibrated']:.2f} years for men",
-        "e65 fitted F": f"{t7.loc[F, 'model_e65_uncalibrated']:.2f} for women",
-        "e65 table": f"{t7.loc[M, 'life_table_e65_2023']:.2f} and {t7.loc[F, 'life_table_e65_2023']:.2f}",
-        "e65 calibrated": f"{t7.loc[M, 'model_e65']:.2f} years for men and {t7.loc[F, 'model_e65']:.2f} for women",
-        "multiplier M": f"{t7c.loc[M, 'death_multiplier_at_65']:.2f} at 65 to {t7c.loc[M, 'death_multiplier_at_95']:.2f} at 95",
-        "multiplier F": f"{t7c.loc[F, 'death_multiplier_at_65']:.2f} to {t7c.loc[F, 'death_multiplier_at_95']:.2f} for women",
-        "qx95": f"{t7q.loc[(M, 95), 'model_qx']:.4f} for men against {t7q.loc[(M, 95), 'life_table_qx']:.4f}",
-        "prev L 90 F": f"({t7b.loc[(F, '90-99', 'L'), 'model_pct']:.1f}% against {t7b.loc[(F, '90-99', 'L'), 'observed_pct']:.1f}%)",
-        "spend ratio before": f"{t7d.loc['65-74', 'ratio_before_scaling']:.3f} and {t7d.loc['75+', 'ratio_before_scaling']:.3f}",
-        "spend ratio after": f"{t7d.loc['65-74', 'ratio']:.3f} and {t7d.loc['75+', 'ratio']:.3f}",
-        "scale factors": f"{t3d.loc[('C', '65-74'), 'mcbs_scale_factor']:.2f} and {t3d.loc[('C', '75+'), 'mcbs_scale_factor']:.2f}",
-        "medicare H 65": d(t3d.loc[("H", "65-74"), "medicare_annual"]),
-        "medicare L 65": d(t3d.loc[("L", "65-74"), "medicare_annual"]),
-        "medicare H 75": d(t3d.loc[("H", "75+"), "medicare_annual"]),
-        "medicare L 75": d(t3d.loc[("L", "75+"), "medicare_annual"]),
-        "oop L75 M": d(t3c.loc[("L", "75+", M), "oop_mean"]),
-        "oop L75 F": d(t3c.loc[("L", "75+", F), "oop_mean"]),
-        "oop L75 p99 M": d(t3c.loc[("L", "75+", M), "oop_p99"]),
-        "oop L75 p99 F": d(t3c.loc[("L", "75+", F), "oop_p99"]),
-        "eol 75 M": d(t3e.loc[("75+", M), "eol_mean"]),
-        "eol 75 F": d(t3e.loc[("75+", F), "eol_mean"]),
-        "eol p99 M": d(t3e.loc[("75+", M), "eol_p99"]),
-        "eol p99 F": d(t3e.loc[("75+", F), "eol_p99"]),
-        "e65 mix M": f"{t4.loc[(M, P), 'life_expectancy']:.1f} more years",
-        "e65 mix F": f"{t4.loc[(F, P), 'life_expectancy']:.1f} years, with",
-        "years L M": f"{t4.loc[(M, P), 'years_in_L']:.2f} in long-term-care need",
-        "years L F": f"{t4.loc[(F, P), 'years_in_L']:.2f} in long-term-care need",
-        "years H M": f"{t4.loc[(M, P), 'years_in_H']:.2f} healthy",
-        "years C M": f"{t4.loc[(M, P), 'years_in_C']:.2f} with chronic illness",
-        "years D M": f"{t4.loc[(M, P), 'years_in_D']:.2f} with disability",
-        "years D F": f"{t4.loc[(F, P), 'years_in_D']:.2f} in disability",
-        "e65 L M": f"{t4.loc[(M, 'L'), 'life_expectancy']:.1f} years for men",
-        "e65 L F": f"{t4.loc[(F, 'L'), 'life_expectancy']:.1f} for women",
-        "e65 H M": f"rather than {t4.loc[(M, 'H'), 'life_expectancy']:.1f}",
-        "ever L M": f"{t4.loc[(M, P), 'ever_ltc_pct']:.1f}% of men",
-        "ever L F": f"{t4.loc[(F, P), 'ever_ltc_pct']:.1f}% of women",
-        "medicare mix M": d(t4.loc[(M, P), "pv_medicare_mean"]),
-        "medicare mix F": d(t4.loc[(F, P), "pv_medicare_mean"]),
-        "medicare mix M lo": d(t4b.loc[(M, P), "pv_medicare_lo"]),
-        "medicare mix M hi": d(t4b.loc[(M, P), "pv_medicare_hi"]),
-        "oop mix M": d(t4.loc[(M, P), "pv_oop_mean"]),
-        "oop mix F": d(t4.loc[(F, P), "pv_oop_mean"]),
-        "oop analytic M": d(t4.loc[(M, P), "pv_oop_analytic"]),
-        "oop mix M lo": d(t4b.loc[(M, P), "pv_oop_lo"]),
-        "oop mix M hi": d(t4b.loc[(M, P), "pv_oop_hi"]),
-        "oop median M": d(t4.loc[(M, P), "pv_oop_median"]),
-        "oop median F": d(t4.loc[(F, P), "pv_oop_median"]),
-        "premium M": d(t4.loc[(M, P), "pv_premium_mean"]),
-        "premium F": d(t4.loc[(F, P), "pv_premium_mean"]),
-        "eol pv M": d(t4.loc[(M, P), "pv_eol_increment_mean"]),
-        "eol pv F": d(t4.loc[(F, P), "pv_eol_increment_mean"]),
-        "medicare H M": d(t4.loc[(M, "H"), "pv_medicare_mean"]),
-        "medicare L M": d(t4.loc[(M, "L"), "pv_medicare_mean"]),
-        "medicare C M": d(t4.loc[(M, "C"), "pv_medicare_mean"]),
-        "medicare C F": d(t4.loc[(F, "C"), "pv_medicare_mean"]),
-        "oop H M": d(t4.loc[(M, "H"), "pv_oop_mean"]),
-        "oop L M": d(t4.loc[(M, "L"), "pv_oop_mean"]),
-        "income L at 65 low M": f"{t4c.loc[(M, 'low'), 'entry_share_L_pct']:.1f}% of men",
-        "income L at 65 low F": f"{t4c.loc[(F, 'low'), 'entry_share_L_pct']:.1f}% of women in the lowest",
-        "income L at 65 high": f"{t4c.loc[(M, 'high'), 'entry_share_L_pct']:.1f}% in the highest",
-        "income ever L": f"{t4c.loc[(M, 'low'), 'ever_ltc_pct']:.1f}% of men against {t4c.loc[(M, 'high'), 'ever_ltc_pct']:.1f}%",
-        "income oop low": f"{d(t4c.loc[(M, 'low'), 'pv_oop_mean'])} for men and {d(t4c.loc[(F, 'low'), 'pv_oop_mean'])} for women",
-        "income oop high": f"{d(t4c.loc[(M, 'high'), 'pv_oop_mean'])} and {d(t4c.loc[(F, 'high'), 'pv_oop_mean'])}",
-        "income e65": f"{t4c.loc[(M, 'low'), 'life_expectancy']:.1f} against {t4c.loc[(M, 'high'), 'life_expectancy']:.1f} years",
-        "VaR95 M": d(t5.loc[(M, P, 0.95), "var"]),
-        "CVaR95 M": d(t5.loc[(M, P, 0.95), "cvar"]),
-        "CVaR99 M": d(t5.loc[(M, P, 0.99), "cvar"]),
-        "VaR95 F": d(t5.loc[(F, P, 0.95), "var"]),
-        "CVaR95 F": d(t5.loc[(F, P, 0.95), "cvar"]),
-        "CVaR99 F": d(t5.loc[(F, P, 0.99), "cvar"]),
-        "CVaR ratio M": f"{t5.loc[(M, P, 0.95), 'cvar_over_mean']:.1f} times the mean",
-        "CVaR ratio F": f"{t5.loc[(F, P, 0.95), 'cvar_over_mean']:.1f} times for women",
-        "tail LTC M": f"{t5.loc[(M, P, 0.95), 'share_of_tail_ever_ltc_pct']:.1f}% passed through L",
-        "tail LTC F": f"{t5.loc[(F, P, 0.95), 'share_of_tail_ever_ltc_pct']:.1f}% against {t5.loc[(F, P, 0.95), 'share_of_all_ever_ltc_pct']:.1f}%",
-        "tail death age": f"{t5.loc[(M, P, 0.95), 'mean_death_age_in_tail']:.1f} on average against {t5.loc[(M, P, 0.95), 'mean_death_age_all']:.1f}",
-        "tail eol": f"{t5.loc[(M, P, 0.95), 'eol_share_of_tail_pv_pct']:.1f}% of the tail's present value for men and {t5.loc[(F, P, 0.95), 'eol_share_of_tail_pv_pct']:.1f}%",
-        "CVaR95 L M": d(t5.loc[(M, "L", 0.95), "cvar"]),
-        "CVaR95 L F": d(t5.loc[(F, "L", 0.95), "cvar"]),
-        "S1 25": f"{d(t6.loc[(M, s1(25)), 'mean_change_vs_s0'])} for men and {d(t6.loc[(F, s1(25)), 'mean_change_vs_s0'])} for women",
-        "S1 50": f"{d(t6.loc[(M, s1(50)), 'mean_change_vs_s0'])} and {d(t6.loc[(F, s1(50)), 'mean_change_vs_s0'])}",
-        "S1 50 abstract": f"{d(t6.loc[(M, s1(50)), 'mean_change_vs_s0'])} for men and {d(t6.loc[(F, s1(50)), 'mean_change_vs_s0'])} for women",
-        "S1 100": f"{d(t6.loc[(M, s1(100)), 'mean_change_vs_s0'])} and {d(t6.loc[(F, s1(100)), 'mean_change_vs_s0'])}",
-        "S1 100 cvar": f"{d(t6.loc[(M, s1(100)), 'cvar95_change_vs_s0'])} and {d(t6.loc[(F, s1(100)), 'cvar95_change_vs_s0'])}",
-        "S2 cvar": f"{d(t6.loc[(M, s2), 'cvar95_change_vs_s0'])} for men and {d(t6.loc[(F, s2), 'cvar95_change_vs_s0'])} for women",
-        "S3 mean": f"{d(t6.loc[(M, s3), 'mean_change_vs_s0'])} and {d(t6.loc[(F, s3), 'mean_change_vs_s0'])}",
-        "S3 cvar": f"{d(t6.loc[(M, s3), 'cvar95_change_vs_s0'])} and {d(t6.loc[(F, s3), 'cvar95_change_vs_s0'])}",
-        "no assets low": f"{t6b.loc[(M, 'low', 'S0 baseline'), 'pct_no_positive_assets']:.1f}% of households",
-        "exhaust low": f"{t6b.loc[(M, 'low', 'S0 baseline'), 'pct_exhausting_assets']:.1f}% of men and {t6b.loc[(F, 'low', 'S0 baseline'), 'pct_exhausting_assets']:.1f}% of women",
-        "exhaust age": f"median age of {t6b.loc[(M, 'low', 'S0 baseline'), 'median_age_at_exhaustion']:.0f} and {t6b.loc[(F, 'low', 'S0 baseline'), 'median_age_at_exhaustion']:.0f}",
-        "exhaust middle": f"{t6b.loc[(M, 'middle', 'S0 baseline'), 'pct_exhausting_assets']:.1f}% and {t6b.loc[(F, 'middle', 'S0 baseline'), 'pct_exhausting_assets']:.1f}%",
-        "exhaust high": f"{t6b.loc[(M, 'high', 'S0 baseline'), 'pct_exhausting_assets']:.1f}% and {t6b.loc[(F, 'high', 'S0 baseline'), 'pct_exhausting_assets']:.1f}%",
+        "lr test": f"{lr:,.1f} on {df} degrees of freedom",
+        "death age slope": (f"{age('H to X'):.2f} per decade from H, {age('C to X'):.2f} from C, "
+                            f"{age('D to X'):.2f} from D, {age('L to X'):.2f} from L and {age('N to X'):.2f} from N"),
+        "female mortality": (f"{min(fem(f'{j} to X') for j in 'HCDLN'):.2f} to "
+                             f"{max(fem(f'{j} to X') for j in 'HCDLN'):.2f} of men's"),
+        "college": (f"mortality from H (hazard ratio {hr.loc[('H to X', 'college'), 'hazard_ratio']:.2f}) and C "
+                    f"({hr.loc[('C to X', 'college'), 'hazard_ratio']:.2f})"),
+        "nonwhite": (f"from H to D ({hr.loc[('H to D', 'nonwhite'), 'hazard_ratio']:.2f}) and from C to D "
+                     f"({hr.loc[('C to D', 'nonwhite'), 'hazard_ratio']:.2f})"),
+        "e65 H male": (f"can expect {ref.loc[(M, 'H'), 'life_expectancy_65']:.2f} more years: "
+                       f"{ref.loc[(M, 'H'), 'years_in_H']:.2f} in H, {ref.loc[(M, 'H'), 'years_in_C']:.2f} in C, "
+                       f"{ref.loc[(M, 'H'), 'years_in_D']:.2f} in D, {ref.loc[(M, 'H'), 'years_in_L']:.2f} in L and "
+                       f"{ref.loc[(M, 'H'), 'years_in_N']:.2f} in N"),
+        "e65 H female": (f"can expect {ref.loc[(F, 'H'), 'life_expectancy_65']:.2f} years, with "
+                         f"{ref.loc[(F, 'H'), 'years_in_L']:.2f} in L and {ref.loc[(F, 'H'), 'years_in_N']:.2f} in N"),
+        "e65 N male": (f"can expect {ref.loc[(M, 'N'), 'life_expectancy_65']:.2f} more years, "
+                       f"{ref.loc[(M, 'N'), 'years_in_N']:.2f} of them in the nursing home"),
+        "medicare mix": f"{d(t4.loc[(M, P), 'pv_medicare_mean'])} for men and {d(t4.loc[(F, P), 'pv_medicare_mean'])} for women",
+        "oop mix": (f"{d(t4.loc[(M, P), 'pv_oop_mean'])} and {d(t4.loc[(F, P), 'pv_oop_mean'])} with medians of "
+                    f"{d(t4.loc[(M, P), 'pv_oop_median'])} and {d(t4.loc[(F, P), 'pv_oop_median'])}"),
+        "premiums": f"{d(t4.loc[(M, P), 'pv_premium_mean'])} and {d(t4.loc[(F, P), 'pv_premium_mean'])}",
+        "mc se": f"{d(t4.loc[(M, P), 'mc_se_oop'])} and {d(t4.loc[(F, P), 'mc_se_oop'])}",
+        "medicare by entry": (f"is expected to cost Medicare {d(t4.loc[(M, LTC_LABEL['H']), 'pv_medicare_mean'])} over "
+                              f"his life; one already in a nursing home"),
+        "medicare N male": f"is expected to cost {d(t4.loc[(M, LTC_LABEL['N']), 'pv_medicare_mean'])}",
+        "e65 entry": (f"live {t4.loc[(M, LTC_LABEL['N']), 'life_expectancy']:.1f} years rather than "
+                      f"{t4.loc[(M, LTC_LABEL['H']), 'life_expectancy']:.1f}"),
+        "medicare C": (f"{d(t4.loc[(M, LTC_LABEL['C']), 'pv_medicare_mean'])} for men and "
+                       f"{d(t4.loc[(F, LTC_LABEL['C']), 'pv_medicare_mean'])} for women"),
+        "oop by entry": (f"{d(t4.loc[(M, LTC_LABEL['H']), 'pv_oop_mean'])} for a man healthy at 65, "
+                         f"{d(t4.loc[(M, LTC_LABEL['C']), 'pv_oop_mean'])} with chronic illness, "
+                         f"{d(t4.loc[(M, LTC_LABEL['D']), 'pv_oop_mean'])} with disability, "
+                         f"{d(t4.loc[(M, LTC_LABEL['L']), 'pv_oop_mean'])} in severe disability at home and "
+                         f"{d(t4.loc[(M, LTC_LABEL['N']), 'pv_oop_mean'])} in a nursing home"),
+        "medicaid by entry": (f"{t4.loc[(M, LTC_LABEL['L']), 'ever_medicaid_pct']:.1f}% reach Medicaid; starting in N, "
+                              f"{t4.loc[(M, LTC_LABEL['N']), 'ever_medicaid_pct']:.1f}%"),
+        "premium by entry": (f"from {d(t4.loc[(M, LTC_LABEL['H']), 'pv_premium_mean'])} to "
+                             f"{d(t4.loc[(M, LTC_LABEL['N']), 'pv_premium_mean'])}"),
+        "medicaid mix": (f"{t4.loc[(M, P), 'ever_medicaid_pct']:.1f}% of men and "
+                         f"{t4.loc[(F, P), 'ever_medicaid_pct']:.1f}% of women reach Medicaid"),
+        "medicaid age": (f"median age of {t4.loc[(M, P), 'median_age_medicaid']:.0f} and "
+                         f"{t4.loc[(F, P), 'median_age_medicaid']:.0f}"),
+        "income assets": f"median non-housing assets of {d(t4c.loc[(M, 'low'), 'median_assets'])} at 65",
+        "income medicaid": (f"{t4c.loc[(M, 'low'), 'ever_medicaid_pct']:.0f}% of lives against "
+                            f"{t4c.loc[(M, 'high'), 'ever_medicaid_pct']:.0f}%"),
+        "income oop": (f"{d(t4c.loc[(M, 'low'), 'pv_oop_mean'])} against {d(t4c.loc[(M, 'high'), 'pv_oop_mean'])} in the "
+                       f"highest tertile, and for women {d(t4c.loc[(F, 'low'), 'pv_oop_mean'])} against "
+                       f"{d(t4c.loc[(F, 'high'), 'pv_oop_mean'])}"),
+        "income medicare": (f"({d(t4c.loc[(M, 'low'), 'pv_medicare_mean'])} for men against "
+                            f"{d(t4c.loc[(M, 'high'), 'pv_medicare_mean'])})"),
+        "tail male": (f"VaR95 is {d(t5.loc[(M, P, 0.95), 'var'])} and CVaR95 {d(t5.loc[(M, P, 0.95), 'cvar'])}, "
+                      f"{t5.loc[(M, P, 0.95), 'cvar_over_mean']:.1f} times the mean, with a Monte Carlo standard error of "
+                      f"{d(t5.loc[(M, P, 0.95), 'cvar_mc_se'])}; CVaR99 is {d(t5.loc[(M, P, 0.99), 'cvar'])}"),
+        "tail female": (f"VaR95 is {d(t5.loc[(F, P, 0.95), 'var'])}, CVaR95 {d(t5.loc[(F, P, 0.95), 'cvar'])}, "
+                        f"{t5.loc[(F, P, 0.95), 'cvar_over_mean']:.1f} times the mean, and CVaR99 "
+                        f"{d(t5.loc[(F, P, 0.99), 'cvar'])}"),
+        "tail ltc male": (f"{t5.loc[(M, P, 0.95), 'share_of_tail_ever_ltc_pct']:.1f}% passed through long-term care "
+                          f"against {t5.loc[(M, P, 0.95), 'share_of_all_ever_ltc_pct']:.1f}% of all men, and they spent "
+                          f"{t5.loc[(M, P, 0.95), 'mean_years_ltc_in_tail']:.1f} years there against "
+                          f"{t4.loc[(M, P), 'years_ltc']:.1f}"),
+        "tail ltc female": (f"{t5.loc[(F, P, 0.95), 'share_of_tail_ever_ltc_pct']:.1f}% against "
+                            f"{t5.loc[(F, P, 0.95), 'share_of_all_ever_ltc_pct']:.1f}%, and "
+                            f"{t5.loc[(F, P, 0.95), 'mean_years_ltc_in_tail']:.1f} years against "
+                            f"{t4.loc[(F, P), 'years_ltc']:.1f}"),
+        "tail age": (f"dying at {t5.loc[(M, P, 0.95), 'mean_death_age_in_tail']:.1f} on average against "
+                     f"{t5.loc[(M, P, 0.95), 'mean_death_age_all']:.1f}"),
+        "tail eol": (f"{t5.loc[(M, P, 0.95), 'eol_share_of_tail_pv_pct']:.1f}% of the tail's present value for men and "
+                     f"{t5.loc[(F, P, 0.95), 'eol_share_of_tail_pv_pct']:.1f}%"),
+        "tail medicaid": (f"{t5.loc[(M, P, 0.95), 'share_of_tail_medicaid_pct']:.0f}% of the men and "
+                          f"{t5.loc[(F, P, 0.95), 'share_of_tail_medicaid_pct']:.0f}% of the women in the tail"),
+        "tail N entry": (f"CVaR95 of {d(t5.loc[(M, LTC_LABEL['N'], 0.95), 'cvar'])} against "
+                         f"{d(t5.loc[(M, P, 0.95), 'cvar'])}; for women the figures are "
+                         f"{d(t5.loc[(F, LTC_LABEL['N'], 0.95), 'cvar'])} against {d(t5.loc[(F, P, 0.95), 'cvar'])}"),
     }
-    rob = T / "table8_robustness.csv"
-    if rob.exists():
-        r = pd.read_csv(rob).set_index("variant")
-        for v, key in (("discount 2%", "rob d2"), ("discount 4%", "rob d4"), ("mortality not calibrated", "rob uncal"),
-                       ("no end-of-life step", "rob eol")):
-            if v in r.index:
-                c[key] = f"{d(r.loc[v, 'male_cvar95_oop'])}"
+    return c
+
+
+def scenario_checks():
+    t6 = pd.read_csv(T / "table6_scenarios.csv").set_index(["sex", "scenario"])
+    t6b = pd.read_csv(T / "table6b_spend_down.csv").set_index(["sex", "income_tertile", "scenario"])
+    name = {k: [s for _, s in t6.index if s.startswith(k)][0] for k in ("S1 shortfall from 2033, shift 25",
+                                                                        "S1 shortfall from 2033, shift 50",
+                                                                        "S1 shortfall from 2033, shift 100",
+                                                                        "S1b", "S2", "S3")}
+    chg = lambda k, col: (d(t6.loc[(M, name[k]), col]), d(t6.loc[(F, name[k]), col]))
+    s0 = "S0 baseline"
+    low = lambda sex, col: t6b.loc[(sex, "low", s0), col]
+    return {
+        "S1 25": f"{chg('S1 shortfall from 2033, shift 25', 'mean_change_vs_s0')[0]} for men and "
+                 f"{chg('S1 shortfall from 2033, shift 25', 'mean_change_vs_s0')[1]} for women",
+        "S1 50": f"{chg('S1 shortfall from 2033, shift 50', 'mean_change_vs_s0')[0]} and "
+                 f"{chg('S1 shortfall from 2033, shift 50', 'mean_change_vs_s0')[1]}",
+        "S1 100": f"{chg('S1 shortfall from 2033, shift 100', 'mean_change_vs_s0')[0]} and "
+                  f"{chg('S1 shortfall from 2033, shift 100', 'mean_change_vs_s0')[1]}",
+        "S1b": f"{chg('S1b', 'mean_change_vs_s0')[0]} and {chg('S1b', 'mean_change_vs_s0')[1]}",
+        "S2 mean": f"{chg('S2', 'mean_change_vs_s0')[0]} and {chg('S2', 'mean_change_vs_s0')[1]}",
+        "S2 cvar": f"CVaR95 rises by {chg('S2', 'cvar95_change_vs_s0')[0]} and {chg('S2', 'cvar95_change_vs_s0')[1]}",
+        "S1 50 cvar": f"against {chg('S1 shortfall from 2033, shift 50', 'cvar95_change_vs_s0')[0]} and "
+                      f"{chg('S1 shortfall from 2033, shift 50', 'cvar95_change_vs_s0')[1]}",
+        "S3 mean": f"{chg('S3', 'mean_change_vs_s0')[0]} and {chg('S3', 'mean_change_vs_s0')[1]}",
+        "S3 cvar": f"CVaR95 by {chg('S3', 'cvar95_change_vs_s0')[0]} and {chg('S3', 'cvar95_change_vs_s0')[1]}",
+        "spend-down low": (f"{low(M, 'medicaid_at_65_pct'):.0f}% of men and {low(F, 'medicaid_at_65_pct'):.0f}% of women "
+                           f"are already enrolled at 65 and a further {low(M, 'spend_down_pct'):.0f}% and "
+                           f"{low(F, 'spend_down_pct'):.0f}% spend down to it, at a median age of "
+                           f"{low(M, 'median_age_spend_down'):.0f} and {low(F, 'median_age_spend_down'):.0f}"),
+        "spend-down middle": (f"{t6b.loc[(M, 'middle', s0), 'spend_down_pct']:.0f}% and "
+                              f"{t6b.loc[(F, 'middle', s0), 'spend_down_pct']:.0f}% spend down"),
+        "spend-down high": (f"{t6b.loc[(M, 'high', s0), 'spend_down_pct']:.0f}% and "
+                            f"{t6b.loc[(F, 'high', s0), 'spend_down_pct']:.0f}%"),
+        "no assets": f"{low(M, 'no_assets_at_65_pct'):.0f}% of the lowest tertile has no positive non-housing assets",
+    }
+
+
+def robustness_checks():
+    f = T / "table8_robustness.csv"
+    if not f.exists():
+        return {}
+    r = pd.read_csv(f).set_index("variant")
+    m = lambda v, col: d(r.loc[v, col]) if v in r.index else "MISSING VARIANT"
+    c = {
+        "rob baseline": f"(men's out-of-pocket mean {m('baseline', 'male_pv_oop')} against",
+        "rob independent": (f"falls from {m('baseline', 'male_cvar95_oop')} to {m('independent out-of-pocket draws', 'male_cvar95_oop')} "
+                            f"and women's from {m('baseline', 'female_cvar95_oop')} to "
+                            f"{m('independent out-of-pocket draws', 'female_cvar95_oop')}"),
+        "rob independent mean": (f"({m('independent out-of-pocket draws', 'male_pv_oop')} and "
+                                 f"{m('independent out-of-pocket draws', 'female_pv_oop')})"),
+        "rob no eol": (f"lowers CVaR95 to {m('no end-of-life step', 'male_cvar95_oop')} and "
+                       f"{m('no end-of-life step', 'female_cvar95_oop')}"),
+        "rob all waves": (f"raises the mean to {m('out-of-pocket from all waves', 'male_pv_oop')} and "
+                          f"{m('out-of-pocket from all waves', 'female_pv_oop')} and CVaR95 to "
+                          f"{m('out-of-pocket from all waves', 'male_cvar95_oop')} and "
+                          f"{m('out-of-pocket from all waves', 'female_cvar95_oop')}"),
+        "rob medicare levels": (f"it is {m('Medicare not scaled to MCBS', 'male_pv_medicare')} for men; with it, "
+                                f"{m('baseline', 'male_pv_medicare')}; using fee-for-service spending only, "
+                                f"{m('Medicare from FFS only', 'male_pv_medicare')}"),
+        "rob trustees level": f"would give {m('Medicare at Trustees level (x1.59)', 'male_pv_medicare')}",
+        "rob uplift": (f"gives {m('D, L and N Medicare +25%', 'male_pv_medicare')}, and the functional cost gradient "
+                       f"variant {m('functional cost gradient', 'male_pv_medicare')}"),
+        "rob uncalibrated": (f"falls to {r.loc['mortality not calibrated', 'male_e65']:.1f} years for men and CVaR95 to "
+                             f"{m('mortality not calibrated', 'male_cvar95_oop')}"),
+        "rob improvement": (f"raises life expectancy to {r.loc['mortality improvement 1% a year', 'male_e65']:.1f} and "
+                            f"{r.loc['mortality improvement 1% a year', 'female_e65']:.1f} years, the share ever in "
+                            f"long-term care to {r.loc['mortality improvement 1% a year', 'male_ever_ltc_pct']:.0f}% and "
+                            f"{r.loc['mortality improvement 1% a year', 'female_ever_ltc_pct']:.0f}%, and CVaR95 to "
+                            f"{m('mortality improvement 1% a year', 'male_cvar95_oop')} and "
+                            f"{m('mortality improvement 1% a year', 'female_cvar95_oop')}"),
+        "rob discount": (f"raises men's CVaR95 to {m('discount 2%', 'male_cvar95_oop')} and at 4% lowers it to "
+                         f"{m('discount 4%', 'male_cvar95_oop')}"),
+        "rob spend-down": (f"from {r.loc['baseline', 'male_ever_medicaid_pct']:.0f}% and "
+                           f"{r.loc['baseline', 'female_ever_medicaid_pct']:.0f}% to "
+                           f"{r.loc['no spend-down', 'male_ever_medicaid_pct']:.0f}% and "
+                           f"{r.loc['no spend-down', 'female_ever_medicaid_pct']:.0f}% and raises CVaR95 to "
+                           f"{m('no spend-down', 'male_cvar95_oop')} and {m('no spend-down', 'female_cvar95_oop')}"),
+        "rob income 0": (f"raises the Medicaid share to {r.loc['income meets 0% of out-of-pocket', 'male_ever_medicaid_pct']:.0f}% "
+                         f"and {r.loc['income meets 0% of out-of-pocket', 'female_ever_medicaid_pct']:.0f}%"),
+        "rob asset limit": (f"raises it to {r.loc['Medicaid asset limit $10,000', 'male_ever_medicaid_pct']:.0f}% and "
+                            f"{r.loc['Medicaid asset limit $10,000', 'female_ever_medicaid_pct']:.0f}%"),
+        "rob sex-only": (f"to {r.loc['sex-only model', 'male_ever_ltc_pct']:.0f}% and "
+                         f"{r.loc['sex-only model', 'female_ever_ltc_pct']:.0f}% and CVaR95 to "
+                         f"{m('sex-only model', 'male_cvar95_oop')} and {m('sex-only model', 'female_cvar95_oop')}"),
+    }
+    return c
+
+
+def load():
+    t1 = pd.read_csv(T / "table1_sample.csv").set_index("quantity")["value"]
+    c = {}
+    for fn in (lambda: sample_checks(t1), cost_checks, model_checks, validation_checks,
+               result_checks, scenario_checks, robustness_checks):
+        c.update(fn())
     return c
 
 
 def cross_reference(text):
     tb = config.ROOT / "manuscript" / "tables.md"
+    if not tb.exists():
+        print("  tables.md not built yet; skipping the cross-reference check")
+        return []
     rendered = set(re.findall(r"\*\*Table ([0-9A-Za-z]+)\.\*\*", tb.read_text()))
+    tok = r"([0-9]+[a-f]?|A[0-9]+[a-f]?)"
     cited = set()
-    for m in re.finditer(r"Tables? ([0-9]+[a-f]?|A[0-9]+)(?:\s+and\s+([0-9]+[a-f]?|A[0-9]+))?", text):
-        cited.update(g for g in m.groups() if g)
+    for m in re.finditer(rf"Tables? {tok}(?:(?:,\s*|\s+and\s+){tok})*", text):
+        cited.update(re.findall(tok, m.group(0)))
     problems = [f"Table {t} is cited in the prose but not rendered" for t in sorted(cited - rendered)]
     problems += [f"Table {t} is rendered but never cited" for t in sorted(rendered - cited)]
     print(f"  {len(rendered)} tables rendered, {len(cited)} cited")
@@ -202,10 +366,10 @@ def body_words(raw):
 
 def main():
     raw = MS.read_text()
-    text = raw.replace("**", "")
+    text = raw.replace("**", "").replace("−", "-")
     checks = load()
     width = max(len(k) for k in checks)
-    bad = [k for k, v in checks.items() if v not in text]
+    bad = [k for k, v in checks.items() if v.replace("−", "-") not in text]
     for k, v in checks.items():
         print(f"  {'ok ' if k not in bad else 'MISSING'}  {k:<{width}}  {v}")
     xref = cross_reference(text)
@@ -213,7 +377,7 @@ def main():
     for p in figs:
         print(f"      figure not found: {p}")
     dashes = raw.count("—")
-    holders = [h for h in ("ROBUSTNESS_PARAGRAPH", "[CITE]", "[VERIFY]", "TODO") if h in raw]
+    holders = [h for h in ("ROBUSTNESS_RESULTS", "EXTENSIONS_RESULTS", "[CITE]", "[VERIFY]", "TODO") if h in raw]
     if dashes:
         print(f"  {dashes} em dash(es) in the prose")
     if holders:
@@ -225,9 +389,9 @@ def main():
     print(f"  body word count {n:,}")
     if bad or xref or figs or dashes or holders:
         if bad:
-            print(f"\n{len(bad)} headline figure(s) do not appear in {MS.name}.")
+            print(f"\n{len(bad)} figure(s) do not appear in {MS.name}.")
         sys.exit(1)
-    print(f"\nAll {len(checks)} headline figures match the current tables.")
+    print(f"\nAll {len(checks)} figures match the current tables.")
 
 
 if __name__ == "__main__":

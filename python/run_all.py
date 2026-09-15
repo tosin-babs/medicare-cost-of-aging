@@ -3,9 +3,10 @@ Run the whole analysis, in order.
 
     ../.venv/bin/python python/run_all.py
 
-Seeded from config.SEED. The transition-model fit is the slow step (about
-half an hour per model on 213,552 intervals); the robustness refits add
-about the same each. Set P5_ROBUST_REFIT=0 to skip the refits.
+Seeded from config.SEED. The transition-model fit is the slow step (an hour
+or more for the two models on 221,966 observations); the robustness refits
+and the model extensions (fit_extensions.py, run separately) add about as
+much each. Set P5_ROBUST_REFIT=0 to skip the refits.
 """
 
 from __future__ import annotations
@@ -26,12 +27,12 @@ STEPS = [
     ("MCBS payer-specific costs", "mcbs_costs"),
     ("HRS panel and health states", "build_hrs"),
     ("RQ1: transition intensities", "fit_transitions"),
+    ("Goodness of fit of the transition model", "gof"),
     ("State-specific costs", "costs"),
-    ("Entry mix and mortality calibration", "population"),
-    ("RQ2 and RQ3: lifetime cost microsimulation and tail risk", "simulate"),
-    ("RQ2 by household income tertile", "income"),
-    ("Validation against life tables, prevalence and spending", "validate"),
-    ("RQ4: financing scenarios and spend-down", "scenarios"),
+    ("Entry sample and mortality calibration", "population"),
+    ("RQ2 and RQ3: lifetime cost microsimulation, income and tail risk", "simulate"),
+    ("RQ4: financing scenarios and Medicaid spend-down", "scenarios"),
+    ("Validation against life tables, prevalence, spending and the literature", "validate"),
     ("Robustness", "robustness"),
     ("Figures", "exhibits"),
     ("Calculator payload", "export_tool_data"),

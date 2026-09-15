@@ -1,0 +1,9 @@
+source,quantity,published,dollar_year,basis,published_2024_dollars,model_male,model_female
+Jones et al. (2018),"Lifetime medical spending from 70, mean",122000.0,2014.0,"per household, includes Medicaid payments, PV at 3%",161662.19999999998,33234.991852563,42298.36799450607
+Jones et al. (2018),"Lifetime medical spending from 70, 95th percentile",300000.0,2014.0,"per household, includes Medicaid payments, PV at 3%",397530.0,116640.13939635828,149384.34218323245
+Kelley et al. (2013),"Out-of-pocket spending in the last five years of life, mean",38688.0,2008.0,"per individual, includes insurance premiums",56368.416000000005,35181.60946147572,42825.99811590035
+Kelley et al. (2013),"Out-of-pocket spending in the last five years of life, median",22885.0,2008.0,"per individual, includes insurance premiums",33343.445,21013.00148010254,22399.603981018066
+Marshall et al. (2011),"Out-of-pocket spending in the last year of life, mean",11618.0,2008.0,"per individual, HRS 1998-2006; the source's dollar year is not stated",16927.426,10386.083904656802,12567.720456616977
+Marshall et al. (2011),"Out-of-pocket spending in the last year of life, 95th percentile",49907.0,2008.0,"per individual, HRS 1998-2006; the source's dollar year is not stated",72714.49900000001,53446.532812495694,67836.796875
+Hurd et al. (2017),Ever a nursing-home stay,56.0,,"percent, from ages 57-61; the model starts at 65",56.0,19.248,30.309
+Hurd et al. (2017),"Lifetime nursing-home out-of-pocket spending, mean",7300.0,2014.0,"per person from 57, PV at 3%; zero for most",9673.23,4635.908916634011,9863.829348822346

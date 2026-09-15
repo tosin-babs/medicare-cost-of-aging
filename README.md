@@ -6,11 +6,11 @@ A multi-state actuarial model of lifetime Medicare spending and household out-of
 
 ## What it does
 
-1. Fits a five-state continuous-time Markov model (healthy, chronic illness, disability, long-term-care need, dead) to 213,552 intervals between HRS interviews, 1998 to 2022, by exact likelihood for interval-censored panel data, with deaths dated to the month and covariates for age, sex, education and race-ethnicity.
-2. Calibrates the model's mortality to the 2023 US period life table while keeping the relative mortality of the states.
-3. Attaches annual Medicare cost by state from the MCBS Cost Supplement and empirical out-of-pocket cost distributions from HRS core interviews, with the last year of life drawn from HRS exit interviews.
-4. Projects lifetime cost from 65 by microsimulation, checked against an exact recursion, and reports Value-at-Risk and Conditional Value-at-Risk of lifetime out-of-pocket cost, the paths that produce the tail, and results by income.
-5. Stresses household cost against scenarios for the Hospital Insurance shortfall projected in the 2026 Medicare Trustees Report, and measures asset exhaustion by income.
+1. Fits a six-state continuous-time Markov model (healthy, chronic illness, disability, severe disability at home, nursing home, dead) to 197,258 intervals between HRS interviews, 1998 to 2022, by exact likelihood for interval-censored panel data: deaths dated to the month with the death intensity taken at the age at death, a linear spline in age with knots at 70 and 85, intensities held piecewise constant over pieces of at most three years, and standard errors clustered on the household.
+2. Calibrates the model's mortality to the 2023 US period life table while keeping the relative mortality of the states, and tests the fit state by state against observed destinations.
+3. Attaches annual Medicare cost by state from the MCBS Cost Supplement, with the concentration of spending in the last year of life imposed at the published share, and draws out-of-pocket cost from HRS by state, age band, sex, Medicaid status and income tertile, with a permanent component and an AR(1) so that costs persist, and the last year of life drawn from HRS exit interviews.
+4. Projects lifetime cost from 65 by microsimulation with Medicaid reached through asset spend-down, checked against an exact recursion over the same cost cells, and reports Value-at-Risk and Conditional Value-at-Risk of lifetime out-of-pocket cost, the paths that produce the tail, and results by income.
+5. Stresses household cost against scenarios for the Hospital Insurance shortfall projected in the 2026 Medicare Trustees Report, and reports who spends down to Medicaid, and when.
 
 ## Headline results
 
@@ -18,12 +18,20 @@ Present value at 65, 2024 dollars, 3% discount rate, a 65-year-old drawn from th
 
 | | Men | Women |
 |---|---:|---:|
-| Life expectancy at 65 (years) | 18.3 | 20.8 |
-| Ever in long-term-care need | 46.4% | 60.6% |
-| Lifetime Medicare spending | $153,316 | $172,481 |
-| Lifetime out-of-pocket spending on care | $37,660 | $48,975 |
-| CVaR95 of lifetime out-of-pocket spending | $127,541 | $174,866 |
-| Share of that tail passing through long-term-care need | 77.8% | 88.3% |
+| Life expectancy at 65 (years) | 18.2 | 20.7 |
+| Ever in long-term care (severe disability at home or nursing home) | 44.2% | 57.9% |
+| Ever on Medicaid after 65 | 15.3% | 23.2% |
+| Lifetime Medicare spending | $154,423 | $171,804 |
+| Lifetime out-of-pocket spending on care | $35,329 | $43,666 |
+| Part B and Part D premiums | $32,195 | $33,977 |
+| CVaR95 of lifetime out-of-pocket spending | $188,368 | $235,495 |
+| CVaR95 as a multiple of the mean | 5.3 | 5.4 |
+| Share of that tail passing through long-term care | 71.8% | 85.7% |
+| Spend-down to Medicaid, lowest income tertile | 16% | 22% |
+
+With out-of-pocket draws taken as independent across years, the way most cost
+models treat them, CVaR95 falls to $119,229 and $158,542: persistence is the
+single largest modeling choice for the tail.
 
 ## Data (not included)
 
@@ -46,7 +54,8 @@ python -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python python/build_tool.py        # rebuild the calculator page
 ```
 
-`P5_ROBUST_REFIT=0` skips the three robustness refits.
+`P5_ROBUST_REFIT=0` skips the five robustness refits, which re-estimate the
+transition model and take about an hour each.
 
 ## Layout
 
@@ -57,7 +66,7 @@ python -m venv .venv && .venv/bin/pip install -r requirements.txt
 | `python/fit_transitions.py` | Intensity models, hazard ratios, health expectancies |
 | `python/mcbs_costs.py`, `python/costs.py` | MCBS payer costs with replicate standard errors; HRS and exit-interview out-of-pocket distributions; Medicare cost by state |
 | `python/population.py` | Entry mix at 65 and mortality calibration |
-| `python/simulate.py`, `python/income.py` | Lifetime cost microsimulation, exact recursion, tail measures, parameter uncertainty, income tertiles |
+| `python/simulate.py` | Lifetime cost microsimulation with persistence and Medicaid spend-down, exact recursion, tail measures, parameter uncertainty, income tertiles |
 | `python/validate.py` | Mortality, prevalence and spending validation |
 | `python/scenarios.py` | Financing scenarios and asset exhaustion |
 | `python/robustness.py` | One-change-at-a-time variants, including refits |
