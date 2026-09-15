@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this model or code, please cite it as below."
+title: "Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk"
+authors:
+  - family-names: Babalola
+    given-names: Oluwatosin Dorcas
+    email: obabalola4@student.gsu.edu
+    affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/tosin-babs/medicare-cost-of-aging"
+url: "https://medicare-cost-of-aging.vercel.app"
+keywords:
+  - multi-state model
+  - Medicare
+  - long-term care
+  - out-of-pocket spending
+  - tail risk
+  - Health and Retirement Study
+  - actuarial science

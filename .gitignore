@@ -17,6 +17,10 @@ venv/
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
+.pytest_cache/
+.vercel/
+manuscript/.combined.md
+manuscript/.paper.*
 .Rproj.user/
 .Rhistory
 

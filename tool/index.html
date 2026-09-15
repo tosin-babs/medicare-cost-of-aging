@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A lifetime cost-of-aging calculator: from health at 65, expected years in each health state, lifetime Medicare and out-of-pocket cost, the worst-case tail, and what a Medicare Hospital Insurance shortfall would pass on to households, built on the Health and Retirement Study and the Medicare Current Beneficiary Survey.">
+<meta name="author" content="Oluwatosin Dorcas Babalola">
+<meta property="og:title" content="The Long Road">
+<meta property="og:description" content="What aging costs Medicare and you, health path by health path.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A4%3C/text%3E%3C/svg%3E">
+<style>
+  html{-webkit-text-size-adjust:100%}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+<title>The Long Road</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+:root{--bg:#fbf8f1;--ink:#22201c;--soft:#6b665c;--rule:#d9d2c3;--card:#fffdf8;
+  --H:#2f7d5b;--C:#2b5f8f;--D:#b9761f;--L:#a63a2f;--X:#7a7a7a;--accent:#a63a2f;
+  --serif:"Spectral",Georgia,serif;--sans:"Work Sans",Helvetica,Arial,sans-serif;--mono:"Courier Prime",Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;
+  padding-inline:max(16px,calc((100vw - 980px)/2));padding-block:0 48px}
+header{padding:52px 0 26px;border-bottom:3px double var(--ink);background:var(--bg)}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(38px,7vw,64px);line-height:.98;margin:.2em 0 .25em;letter-spacing:-.02em}
+.lede{font-size:clamp(17px,2.2vw,20px);max-width:42em;margin:0}
+section{padding:30px 0;border-bottom:1px solid var(--rule);background:var(--bg)}
+h2{font-family:var(--sans);font-weight:600;font-size:clamp(20px,3vw,26px);margin:0 0 .35em}
+.note{font-family:var(--sans);color:var(--soft);font-size:14px;max-width:44em;line-height:1.5}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin:16px 0}
+.field{display:flex;flex-direction:column;gap:4px;font-family:var(--sans);font-size:13px}
+select{font-family:var(--sans);font-size:14px;padding:7px 9px;background:var(--card);border:1px solid var(--ink);color:var(--ink);min-width:180px}
+.seg{display:inline-flex;border:1px solid var(--ink);overflow:hidden}
+.seg button{font-family:var(--sans);font-size:13px;padding:7px 12px;background:var(--card);border:0;border-right:1px solid var(--ink);color:var(--ink);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:14px}
+.tile{background:var(--card);border:1px solid var(--rule);padding:12px 14px}
+.tile b{display:block;font-family:var(--mono);font-size:clamp(22px,3.2vw,30px);font-weight:700;line-height:1.1}
+.tile span{font-family:var(--sans);font-size:12.5px;color:var(--soft)}
+.tile.warn b{color:var(--accent)}
+.chart{background:var(--card);border:1px solid var(--rule);padding:12px;margin-top:12px;overflow-x:auto}
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--sans);font-size:11.5px;fill:var(--ink)}
+.big{font-size:clamp(18px,2.5vw,22px);max-width:38em;margin:12px 0 2px}
+.big strong{font-family:var(--mono);color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13px;background:var(--card)}
+th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}th:first-child,td:first-child{text-align:left}
+thead th{border-bottom:2px solid var(--ink)}
+footer{padding:26px 0 0;font-family:var(--sans);font-size:13px;color:var(--soft)}footer a{color:var(--ink)}
+</style>
+
+</head>
+<body>
+<header>
+  <div class="kicker">Medicare · the cost of aging · public calculator</div>
+  <h1>The Long Road</h1>
+  <p class="lede">Turn 65, and the rest of your life runs along one of a few health paths: staying well, living with chronic illness, needing help with daily tasks, needing long-term care. Each path costs Medicare and costs you differently. Pick where you start and see where the road tends to go, what it costs, how bad the worst stretches get, and what happens if Medicare's hospital fund runs short in 2033.</p>
+</header>
+
+<section>
+  <h2>1. Where do you start?</h2>
+  <div class="controls">
+    <div class="field">Sex<div class="seg" id="sex" role="group"><button aria-pressed="true" data-v="male">Male</button><button aria-pressed="false" data-v="female">Female</button></div></div>
+    <div class="field"><label for="entry">Health at 65</label><select id="entry"></select></div>
+  </div>
+  <p class="big" id="path-sentence"></p>
+  <div class="tiles" id="tiles"></div>
+  <div class="chart" id="years-chart"></div>
+  <p class="note">Years expected in each state from age 65, from a five-state model of health transitions fitted to 213,552 intervals between Health and Retirement Study interviews (1998 to 2022), with deaths dated to the month.</p>
+</section>
+
+<section>
+  <h2>2. What the road costs</h2>
+  <div class="tiles" id="cost-tiles"></div>
+  <div class="chart" id="oop-chart"></div>
+  <p class="note" id="oop-note"></p>
+</section>
+
+<section>
+  <h2>3. If the hospital fund runs short</h2>
+  <p class="note" id="scen-note"></p>
+  <div class="controls"><div class="field"><label for="scen">Scenario</label><select id="scen"></select></div></div>
+  <div class="tiles" id="scen-tiles"></div>
+  <div class="chart" id="spend-table"></div>
+</section>
+
+<section>
+  <h2>4. Does the model get mortality right?</h2>
+  <div class="chart" id="check-table"></div>
+  <p class="note">Life expectancy at 65. The fitted model pools deaths from 1998 to 2022, when mortality was higher than in 2023, so it runs a year or more short. The calculator scales death rates by age and sex to match the 2023 US period life table, keeping each health state's relative risk, and also shows that each state's share of the population by age matches the survey.</p>
+</section>
+
+<footer id="foot"></footer>
+
+<script id="model-data" type="application/json">{"meta":{"generated":"2026-09-15","dollars":"2024 dollars, present value at 65 discounted at 3%","sources":"RAND HRS Longitudinal File 1992-2022 (V1); MCBS Cost Supplement PUF 2019, 2021-2023; 2026 Medicare Trustees Report; NCHS United States Life Tables, 2023","paper":"Health-State Transitions and the Lifetime Cost of Aging in Medicare","author":"Oluwatosin Dorcas Babalola","repository":"https://github.com/tosin-babs/medicare-cost-of-aging","depletion":"second quarter of 2033","payable":0.89,"n_lives":100000},"states":{"H":"Healthy","C":"Chronic illness","D":"Disability","L":"Long-term-care need"},"expectancy":[{"sex":"male","entry":"H","e65":20.4,"years":{"H":7.4,"C":9.63,"D":2.04,"L":1.36}},{"sex":"male","entry":"C","e65":18.4,"years":{"H":0.08,"C":14.65,"D":2.27,"L":1.43}},{"sex":"male","entry":"D","e65":16.0,"years":{"H":0.21,"C":9.22,"D":4.44,"L":2.11}},{"sex":"male","entry":"L","e65":12.5,"years":{"H":0.12,"C":5.34,"D":2.56,"L":4.47}},{"sex":"male","entry":"Population mix","e65":18.3,"years":{"H":1.15,"C":13.15,"D":2.45,"L":1.58}},{"sex":"female","entry":"H","e65":23.0,"years":{"H":7.65,"C":10.62,"D":2.53,"L":2.16}},{"sex":"female","entry":"C","e65":21.0,"years":{"H":0.08,"C":15.57,"D":2.92,"L":2.41}},{"sex":"female","entry":"D","e65":18.8,"years":{"H":0.17,"C":10.19,"D":5.15,"L":3.3}},{"sex":"female","entry":"L","e65":15.7,"years":{"H":0.1,"C":6.34,"D":3.21,"L":6.01}},{"sex":"female","entry":"Population mix","e65":20.8,"years":{"H":1.16,"C":14.0,"D":3.09,"L":2.6}}],"lifetime":[{"sex":"male","entry":"H","e65":20.4,"ever_ltc":43.3,"medicare":140295,"oop_mean":35373,"oop_median":28827,"premium":31993,"eol":2691},{"sex":"male","entry":"C","e65":18.4,"ever_ltc":43.5,"medicare":157627,"oop_mean":38205,"oop_median":31997,"premium":29399,"eol":2766},{"sex":"male","entry":"D","e65":16.0,"ever_ltc":55.3,"medicare":147323,"oop_mean":38046,"oop_median":30803,"premium":25979,"eol":2582},{"sex":"male","entry":"L","e65":12.5,"ever_ltc":100.0,"medicare":126204,"oop_mean":38065,"oop_median":27543,"premium":20917,"eol":2030},{"sex":"male","entry":"Population mix","e65":18.3,"ever_ltc":46.4,"medicare":153316,"oop_mean":37660,"oop_median":31282,"premium":29224,"eol":2663},{"sex":"female","entry":"H","e65":23.0,"ever_ltc":56.9,"medicare":157174,"oop_mean":44736,"oop_median":35152,"premium":34855,"eol":3155},{"sex":"female","entry":"C","e65":21.0,"ever_ltc":58.5,"medicare":176905,"oop_mean":49450,"oop_median":39378,"premium":32442,"eol":3170},{"sex":"female","entry":"D","e65":18.8,"ever_ltc":68.0,"medicare":170146,"oop_mean":50378,"oop_median":39203,"premium":29554,"eol":2997},{"sex":"female","entry":"L","e65":15.7,"ever_ltc":100.0,"medicare":153454,"oop_mean":51752,"oop_median":38550,"premium":25170,"eol":2549},{"sex":"female","entry":"Population mix","e65":20.8,"ever_ltc":60.6,"medicare":172481,"oop_mean":48975,"oop_median":38684,"premium":32221,"eol":3072}],"tail":[{"sex":"male","entry":"H","level":0.9,"var":66601,"cvar":98596,"ltc_in_tail":70.3},{"sex":"male","entry":"H","level":0.95,"var":86637,"cvar":121865,"ltc_in_tail":72.9},{"sex":"male","entry":"H","level":0.99,"var":143643,"cvar":185781,"ltc_in_tail":66.6},{"sex":"male","entry":"C","level":0.9,"var":72108,"cvar":104289,"ltc_in_tail":71.6},{"sex":"male","entry":"C","level":0.95,"var":92141,"cvar":127813,"ltc_in_tail":75.0},{"sex":"male","entry":"C","level":0.99,"var":146630,"cvar":193398,"ltc_in_tail":74.3},{"sex":"male","entry":"D","level":0.9,"var":77015,"cvar":112403,"ltc_in_tail":81.8},{"sex":"male","entry":"D","level":0.95,"var":99727,"cvar":137762,"ltc_in_tail":84.6},{"sex":"male","entry":"D","level":0.99,"var":159174,"cvar":203938,"ltc_in_tail":82.8},{"sex":"male","entry":"L","level":0.9,"var":87289,"cvar":129153,"ltc_in_tail":100.0},{"sex":"male","entry":"L","level":0.95,"var":116010,"cvar":158274,"ltc_in_tail":100.0},{"sex":"male","entry":"L","level":0.99,"var":184878,"cvar":225998,"ltc_in_tail":100.0},{"sex":"male","entry":"Population mix","level":0.9,"var":71794,"cvar":104245,"ltc_in_tail":74.6},{"sex":"male","entry":"Population mix","level":0.95,"var":92761,"cvar":127541,"ltc_in_tail":77.8},{"sex":"male","entry":"Population mix","level":0.99,"var":148529,"cvar":188051,"ltc_in_tail":72.9},{"sex":"female","entry":"H","level":0.9,"var":85229,"cvar":127269,"ltc_in_tail":83.7},{"sex":"female","entry":"H","level":0.95,"var":110499,"cvar":158291,"ltc_in_tail":85.9},{"sex":"female","entry":"H","level":0.99,"var":181042,"cvar":253353,"ltc_in_tail":81.6},{"sex":"female","entry":"C","level":0.9,"var":94542,"cvar":140095,"ltc_in_tail":84.6},{"sex":"female","entry":"C","level":0.95,"var":121535,"cvar":173995,"ltc_in_tail":85.9},{"sex":"female","entry":"C","level":0.99,"var":200697,"cvar":277558,"ltc_in_tail":80.1},{"sex":"female","entry":"D","level":0.9,"var":102187,"cvar":150789,"ltc_in_tail":90.4},{"sex":"female","entry":"D","level":0.95,"var":131855,"cvar":186309,"ltc_in_tail":91.2},{"sex":"female","entry":"D","level":0.99,"var":208306,"cvar":296705,"ltc_in_tail":88.5},{"sex":"female","entry":"L","level":0.9,"var":115399,"cvar":163447,"ltc_in_tail":100.0},{"sex":"female","entry":"L","level":0.95,"var":146020,"cvar":197908,"ltc_in_tail":100.0},{"sex":"female","entry":"L","level":0.99,"var":222409,"cvar":294386,"ltc_in_tail":100.0},{"sex":"female","entry":"Population mix","level":0.9,"var":94711,"cvar":140924,"ltc_in_tail":86.8},{"sex":"female","entry":"Population mix","level":0.95,"var":122555,"cvar":174866,"ltc_in_tail":88.3},{"sex":"female","entry":"Population mix","level":0.99,"var":198738,"cvar":282008,"ltc_in_tail":84.0}],"scenarios":[{"sex":"male","entry":"H","scenario":"S0 baseline","mean":35373,"cvar95":121865,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":35373,"cvar95":121865,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":35832,"cvar95":122460,"d_mean":459,"d_cvar95":595},{"sex":"male","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":36290,"cvar95":123056,"d_mean":917,"d_cvar95":1191},{"sex":"male","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":37207,"cvar95":124252,"d_mean":1834,"d_cvar95":2387},{"sex":"male","entry":"H","scenario":"S2 shortfall on long-term-care state","mean":37207,"cvar95":128115,"d_mean":1834,"d_cvar95":6250},{"sex":"male","entry":"H","scenario":"S3 real growth 1.7% and shift 50%","mean":45498,"cvar95":160709,"d_mean":10125,"d_cvar95":38844},{"sex":"male","entry":"C","scenario":"S0 baseline","mean":38205,"cvar95":127813,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":38205,"cvar95":127813,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":38649,"cvar95":128429,"d_mean":445,"d_cvar95":617},{"sex":"male","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":39094,"cvar95":129047,"d_mean":889,"d_cvar95":1235},{"sex":"male","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":39983,"cvar95":130288,"d_mean":1779,"d_cvar95":2476},{"sex":"male","entry":"C","scenario":"S2 shortfall on long-term-care state","mean":39983,"cvar95":133679,"d_mean":1779,"d_cvar95":5866},{"sex":"male","entry":"C","scenario":"S3 real growth 1.7% and shift 50%","mean":47761,"cvar95":165789,"d_mean":9556,"d_cvar95":37977},{"sex":"male","entry":"D","scenario":"S0 baseline","mean":38046,"cvar95":137762,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":38046,"cvar95":137762,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":38421,"cvar95":138334,"d_mean":375,"d_cvar95":572},{"sex":"male","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":38797,"cvar95":138907,"d_mean":751,"d_cvar95":1145},{"sex":"male","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":39548,"cvar95":140060,"d_mean":1501,"d_cvar95":2298},{"sex":"male","entry":"D","scenario":"S2 shortfall on long-term-care state","mean":39548,"cvar95":142796,"d_mean":1501,"d_cvar95":5034},{"sex":"male","entry":"D","scenario":"S3 real growth 1.7% and shift 50%","mean":46464,"cvar95":173265,"d_mean":8418,"d_cvar95":35504},{"sex":"male","entry":"L","scenario":"S0 baseline","mean":38065,"cvar95":158274,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":38065,"cvar95":158274,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":38347,"cvar95":158784,"d_mean":282,"d_cvar95":510},{"sex":"male","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":38629,"cvar95":159296,"d_mean":564,"d_cvar95":1022},{"sex":"male","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":39193,"cvar95":160327,"d_mean":1128,"d_cvar95":2053},{"sex":"male","entry":"L","scenario":"S2 shortfall on long-term-care state","mean":39193,"cvar95":161969,"d_mean":1128,"d_cvar95":3695},{"sex":"male","entry":"L","scenario":"S3 real growth 1.7% and shift 50%","mean":44697,"cvar95":187266,"d_mean":6631,"d_cvar95":28993},{"sex":"male","entry":"Population mix","scenario":"S0 baseline","mean":37660,"cvar95":127541,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":37660,"cvar95":127541,"d_mean":0,"d_cvar95":0},{"sex":"male","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":38096,"cvar95":128139,"d_mean":436,"d_cvar95":598},{"sex":"male","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":38532,"cvar95":128739,"d_mean":872,"d_cvar95":1198},{"sex":"male","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":39404,"cvar95":129944,"d_mean":1743,"d_cvar95":2403},{"sex":"male","entry":"Population mix","scenario":"S2 shortfall on long-term-care state","mean":39404,"cvar95":133487,"d_mean":1743,"d_cvar95":5945},{"sex":"male","entry":"Population mix","scenario":"S3 real growth 1.7% and shift 50%","mean":47089,"cvar95":164531,"d_mean":9428,"d_cvar95":36990},{"sex":"female","entry":"H","scenario":"S0 baseline","mean":44736,"cvar95":158291,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":44736,"cvar95":158291,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":45274,"cvar95":158968,"d_mean":539,"d_cvar95":677},{"sex":"female","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":45813,"cvar95":159645,"d_mean":1077,"d_cvar95":1355},{"sex":"female","entry":"H","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":46891,"cvar95":161005,"d_mean":2155,"d_cvar95":2714},{"sex":"female","entry":"H","scenario":"S2 shortfall on long-term-care state","mean":46891,"cvar95":165396,"d_mean":2155,"d_cvar95":7106},{"sex":"female","entry":"H","scenario":"S3 real growth 1.7% and shift 50%","mean":59108,"cvar95":215636,"d_mean":14373,"d_cvar95":57345},{"sex":"female","entry":"C","scenario":"S0 baseline","mean":49450,"cvar95":173995,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":49450,"cvar95":173995,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":49981,"cvar95":174682,"d_mean":531,"d_cvar95":687},{"sex":"female","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":50513,"cvar95":175369,"d_mean":1063,"d_cvar95":1374},{"sex":"female","entry":"C","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":51576,"cvar95":176749,"d_mean":2126,"d_cvar95":2754},{"sex":"female","entry":"C","scenario":"S2 shortfall on long-term-care state","mean":51576,"cvar95":180294,"d_mean":2126,"d_cvar95":6299},{"sex":"female","entry":"C","scenario":"S3 real growth 1.7% and shift 50%","mean":63370,"cvar95":229770,"d_mean":13920,"d_cvar95":55775},{"sex":"female","entry":"D","scenario":"S0 baseline","mean":50378,"cvar95":186309,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":50378,"cvar95":186309,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":50849,"cvar95":186980,"d_mean":472,"d_cvar95":670},{"sex":"female","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":51321,"cvar95":187652,"d_mean":943,"d_cvar95":1343},{"sex":"female","entry":"D","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":52264,"cvar95":189001,"d_mean":1887,"d_cvar95":2692},{"sex":"female","entry":"D","scenario":"S2 shortfall on long-term-care state","mean":52264,"cvar95":191891,"d_mean":1887,"d_cvar95":5581},{"sex":"female","entry":"D","scenario":"S3 real growth 1.7% and shift 50%","mean":63207,"cvar95":238692,"d_mean":12829,"d_cvar95":52382},{"sex":"female","entry":"L","scenario":"S0 baseline","mean":51752,"cvar95":197908,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":51752,"cvar95":197908,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":52139,"cvar95":198574,"d_mean":386,"d_cvar95":666},{"sex":"female","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":52525,"cvar95":199242,"d_mean":772,"d_cvar95":1334},{"sex":"female","entry":"L","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":53297,"cvar95":200583,"d_mean":1545,"d_cvar95":2675},{"sex":"female","entry":"L","scenario":"S2 shortfall on long-term-care state","mean":53297,"cvar95":202615,"d_mean":1545,"d_cvar95":4707},{"sex":"female","entry":"L","scenario":"S3 real growth 1.7% and shift 50%","mean":62775,"cvar95":246962,"d_mean":11022,"d_cvar95":49054},{"sex":"female","entry":"Population mix","scenario":"S0 baseline","mean":48975,"cvar95":174866,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 0%","mean":48975,"cvar95":174866,"d_mean":0,"d_cvar95":0},{"sex":"female","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 25%","mean":49496,"cvar95":175547,"d_mean":521,"d_cvar95":681},{"sex":"female","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 50%","mean":50017,"cvar95":176230,"d_mean":1042,"d_cvar95":1363},{"sex":"female","entry":"Population mix","scenario":"S1 Part A payable 89% from 2033, shift 100%","mean":51059,"cvar95":177598,"d_mean":2084,"d_cvar95":2732},{"sex":"female","entry":"Population mix","scenario":"S2 shortfall on long-term-care state","mean":51059,"cvar95":181247,"d_mean":2084,"d_cvar95":6380},{"sex":"female","entry":"Population mix","scenario":"S3 real growth 1.7% and shift 50%","mean":62756,"cvar95":230086,"d_mean":13781,"d_cvar95":55219}],"spend_down":[{"sex":"male","tertile":"low","scenario":"S0 baseline","assets":66192,"nopos":19.0,"pct":32.2,"age":70},{"sex":"male","tertile":"low","scenario":"S1 shift 50%","assets":66192,"nopos":19.0,"pct":32.6,"age":70},{"sex":"male","tertile":"middle","scenario":"S0 baseline","assets":304270,"nopos":4.3,"pct":11.3,"age":75},{"sex":"male","tertile":"middle","scenario":"S1 shift 50%","assets":304270,"nopos":4.3,"pct":11.6,"age":75},{"sex":"male","tertile":"high","scenario":"S0 baseline","assets":817677,"nopos":1.7,"pct":3.6,"age":77},{"sex":"male","tertile":"high","scenario":"S1 shift 50%","assets":817677,"nopos":1.7,"pct":3.7,"age":77},{"sex":"female","tertile":"low","scenario":"S0 baseline","assets":66388,"nopos":18.8,"pct":36.9,"age":71},{"sex":"female","tertile":"low","scenario":"S1 shift 50%","assets":66388,"nopos":18.8,"pct":37.4,"age":71},{"sex":"female","tertile":"middle","scenario":"S0 baseline","assets":305424,"nopos":4.3,"pct":14.4,"age":77},{"sex":"female","tertile":"middle","scenario":"S1 shift 50%","assets":305424,"nopos":4.3,"pct":14.6,"age":77},{"sex":"female","tertile":"high","scenario":"S0 baseline","assets":816875,"nopos":1.7,"pct":4.8,"age":79},{"sex":"female","tertile":"high","scenario":"S1 shift 50%","assets":816875,"nopos":1.7,"pct":4.9,"age":79}],"mortality_check":[{"sex":"male","fitted":16.7,"model":18.3,"life_table":18.2},{"sex":"female","fitted":19.5,"model":20.9,"life_table":20.7}],"oop_histogram":{"edges_k":[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300],"top_bin_open":true,"share":{"male|H":[0.09587,0.19995,0.22878,0.17513,0.10725,0.06437,0.04023,0.02559,0.01823,0.01221,0.00854,0.00574,0.00449,0.0028,0.00215,0.00174,0.00143,0.00112,0.00082,0.00086,0.00072,0.0004,0.00032,0.00033,0.00021,0.00016,0.00019,6e-05,7e-05,0.00024],"male|C":[0.09881,0.16046,0.20121,0.18249,0.12521,0.0772,0.04669,0.03272,0.0216,0.0148,0.01044,0.0075,0.00515,0.0038,0.00267,0.00209,0.00148,0.00112,0.00085,0.00078,0.0006,0.00052,0.00026,0.00031,0.00019,0.00021,7e-05,0.00019,0.00015,0.00043],"male|D":[0.15425,0.15786,0.17404,0.15697,0.11014,0.07425,0.04765,0.03369,0.02406,0.01744,0.01248,0.00904,0.00658,0.00516,0.00378,0.00279,0.00222,0.00146,0.00117,0.00103,0.00089,0.00056,0.00038,0.00037,0.0004,0.00026,0.00022,0.0002,0.00011,0.00055],"male|L":[0.2564,0.14364,0.13244,0.11361,0.08571,0.06428,0.04787,0.03565,0.02667,0.01982,0.01568,0.01278,0.00949,0.00789,0.00589,0.00437,0.00356,0.00311,0.00225,0.00175,0.00165,0.00132,0.00079,0.00072,0.00052,0.00042,0.00038,0.00031,0.00026,0.00077],"male|Population mix":[0.10752,0.16526,0.20107,0.17864,0.12034,0.0728,0.04744,0.03149,0.02083,0.01498,0.01032,0.00771,0.00522,0.00376,0.00307,0.00242,0.00158,0.00125,0.00087,0.00077,0.00063,0.00042,0.00032,0.00028,0.00015,0.0002,0.00019,9e-05,0.0001,0.00028],"female|H":[0.04716,0.1428,0.20864,0.18448,0.12596,0.08095,0.05493,0.03885,0.02864,0.02146,0.0155,0.01166,0.00898,0.00641,0.00484,0.00367,0.00282,0.00205,0.00171,0.00143,0.00105,0.00071,0.00069,0.00057,0.00054,0.0004,0.0004,0.00033,0.00029,0.00208],"female|C":[0.05658,0.11348,0.16513,0.17464,0.13577,0.094,0.06609,0.04751,0.03446,0.02568,0.02051,0.0145,0.01091,0.0089,0.00609,0.00496,0.00373,0.0028,0.00216,0.00201,0.00155,0.00129,0.001,0.00072,0.00077,0.00043,0.00053,0.00046,0.00036,0.00298],"female|D":[0.09693,0.11649,0.14728,0.1507,0.12223,0.08601,0.06305,0.04719,0.03694,0.02807,0.02197,0.01729,0.01353,0.01082,0.00821,0.00712,0.00488,0.00419,0.00287,0.00257,0.00191,0.00156,0.00117,0.00091,0.00091,0.00076,0.00065,0.00043,0.00037,0.00299],"female|L":[0.1656,0.11366,0.11894,0.11752,0.09796,0.07453,0.05848,0.0448,0.03813,0.03204,0.02568,0.02289,0.01762,0.01472,0.01165,0.00884,0.00731,0.00584,0.0044,0.00353,0.00297,0.00249,0.00157,0.00149,0.00131,0.00087,0.00083,0.00066,0.00051,0.00316],"female|Population mix":[0.06194,0.11718,0.16987,0.17167,0.13265,0.09061,0.06341,0.04589,0.03355,0.02559,0.01965,0.01493,0.01163,0.00921,0.00658,0.00512,0.00358,0.003,0.0024,0.00181,0.00142,0.00106,0.00085,0.00065,0.00072,0.00064,0.00043,0.0005,0.00049,0.00297]}}}</script>
+<script>
+(function(){
+const D = JSON.parse(document.getElementById("model-data").textContent);
+const $ = id => document.getElementById(id);
+const money = v => (v < 0 ? "-$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US");
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt !== undefined) e.textContent = txt; if (p) p.appendChild(e); return e; };
+const COL = {H:"#2f7d5b", C:"#2b5f8f", D:"#b9761f", L:"#a63a2f", X:"#7a7a7a"};
+let sex = "male", entry = "Population mix";
+const entries = ["Population mix", "H", "C", "D", "L"];
+entries.forEach(e => { const o = document.createElement("option"); o.value = e; o.textContent = e === "Population mix" ? "Typical 65-year-old (population mix)" : D.states[e]; $("entry").appendChild(o); });
+[...$("sex").children].forEach(b => b.onclick = () => { sex = b.dataset.v; [...$("sex").children].forEach(c => c.setAttribute("aria-pressed", c === b)); draw(); });
+$("entry").onchange = () => { entry = $("entry").value; draw(); };
+const find = (arr, f) => arr.find(f) || {};
+
+function drawYears(exp){
+  const states = ["H","C","D","L"];
+  const W = 860, H = 90, left = 10;
+  const total = states.reduce((s, k) => s + (exp.years[k] || 0), 0);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Years expected in each state"});
+  let x = left;
+  states.forEach(k => {
+    const w = (W - 20) * (exp.years[k] || 0) / total;
+    el("rect", {x, y: 18, width: w, height: 36, fill: COL[k]}, svg);
+    if (w > 46) el("text", {x: x + w / 2, y: 41, "text-anchor": "middle", fill: "#fff", "font-weight": 600}, svg, `${exp.years[k].toFixed(1)} y`);
+    const short = {H: "Healthy", C: "Chronic illness", D: "Disability", L: "LTC need"}[k];
+    el("text", {x: x + w / 2, y: 72, "text-anchor": "middle", "font-size": 10.5}, svg, w > 58 ? short : "");
+    x += w;
+  });
+  el("text", {x: left, y: 12, "font-size": 11}, svg, `Expected ${total.toFixed(1)} more years from 65`);
+  $("years-chart").replaceChildren(svg);
+}
+
+function drawHist(){
+  const edges = D.oop_histogram.edges_k;
+  const share = D.oop_histogram.share[`${sex}|${entry}`];
+  const t = find(D.tail, r => r.sex === sex && r.entry === entry && r.level === 0.95);
+  const W = 860, H = 230, L = 40, B = 40;
+  const max = Math.max(...share);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Distribution of lifetime out-of-pocket cost"});
+  const bw = (W - L - 10) / share.length;
+  share.forEach((s, i) => {
+    const x = L + i * bw, hh = (H - B - 20) * s / max;
+    const hi = edges[i + 1] * 1000;
+    el("rect", {x, y: H - B - hh, width: bw - 1, height: hh, fill: hi > t.var ? COL.L : COL.C, opacity: .85}, svg);
+    if (i % 5 === 0) el("text", {x: x, y: H - B + 16, "font-size": 10}, svg, `$${edges[i]}k`);
+  });
+  el("text", {x: W - 10, y: H - B + 16, "font-size": 10, "text-anchor": "end"}, svg, `$${edges[edges.length - 1]}k+`);
+  el("text", {x: L, y: 14, "font-size": 11}, svg, `Present value of lifetime out-of-pocket cost for care, ${D.meta.n_lives.toLocaleString("en-US")} simulated lives. Red: the worst 5%, averaging ${money(t.cvar)}.`);
+  $("oop-chart").replaceChildren(svg);
+}
+
+function draw(){
+  const exp = find(D.expectancy, r => r.sex === sex && r.entry === entry);
+  const life = find(D.lifetime, r => r.sex === sex && r.entry === entry);
+  const tail = find(D.tail, r => r.sex === sex && r.entry === entry && r.level === 0.95);
+  const label = entry === "Population mix" ? `a typical ${sex} 65-year-old` : `a ${sex} 65-year-old who is ${D.states[entry].toLowerCase().replace("long-term-care need","in need of long-term care")}`;
+  $("path-sentence").innerHTML = `For ${label}: about <strong>${life.e65}</strong> more years, and a <strong>${life.ever_ltc}%</strong> chance of needing long-term care at some point.`;
+  $("tiles").innerHTML = [[life.e65 + " years", "expected remaining life"], [life.ever_ltc + "%", "chance of ever needing long-term care"]]
+    .map(([b, s]) => `<div class="tile"><b>${b}</b><span>${s}</span></div>`).join("");
+  drawYears(exp);
+  $("cost-tiles").innerHTML = [[money(life.medicare), "Medicare pays over your life (present value)"],
+    [money(life.oop_mean), "you pay out of pocket for care, on average"], [money(life.oop_median), "you pay for care, typical (median) case"],
+    [money(tail.cvar), "you pay for care in the worst 5% of paths, on average", "warn"],
+    [money(life.premium), "Part B premiums on top, over your life"]]
+    .map(([b, s, c]) => `<div class="tile ${c || ""}"><b>${b}</b><span>${s}</span></div>`).join("");
+  $("oop-note").textContent = `Of the lives in that worst 5%, ${tail.ltc_in_tail}% passed through long-term-care need, against ${life.ever_ltc}% of all lives. The tail is mostly the long-term-care path.`;
+  drawHist();
+  drawScen();
+}
+
+const scenNames = [...new Set(D.scenarios.map(r => r.scenario))];
+scenNames.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; $("scen").appendChild(o); });
+$("scen").value = scenNames.find(s => s.includes("shift 50%")) || scenNames[0];
+$("scen").onchange = drawScen;
+$("scen-note").textContent = `The 2026 Trustees Report projects the Hospital Insurance trust fund to be depleted in the ${D.meta.depletion}, after which revenue covers ${Math.round(100 * D.meta.payable)}% of scheduled Part A benefits. The report assumes benefits are paid in full anyway. These scenarios ask what happens to households if they are not.`;
+function drawScen(){
+  const r = find(D.scenarios, x => x.sex === sex && x.entry === entry && x.scenario === $("scen").value);
+  $("scen-tiles").innerHTML = [[money(r.d_mean || 0), "change in what you pay, average"], [money(r.d_cvar95 || 0), "change in the worst 5%", "warn"], [money(r.cvar95 || 0), "worst 5% under this scenario"]]
+    .map(([b, s, c]) => `<div class="tile ${c || ""}"><b>${b}</b><span>${s}</span></div>`).join("");
+  const rows = D.spend_down.filter(x => x.sex === sex);
+  $("spend-table").innerHTML = "<table><thead><tr><th>Household income at 65</th><th>Median assets</th><th>No savings at 65</th><th>Care costs use up savings, baseline</th><th>Shortfall shifted 50%</th><th>Typical age it happens</th></tr></thead><tbody>" +
+    ["low", "middle", "high"].map(t => { const a = rows.find(x => x.tertile === t && x.scenario.startsWith("S0")) || {}; const b = rows.find(x => x.tertile === t && x.scenario.startsWith("S1")) || {};
+      return `<tr><td>${t}</td><td>${money(a.assets || 0)}</td><td>${a.nopos}%</td><td>${a.pct}%</td><td>${b.pct}%</td><td>${a.age}</td></tr>`; }).join("") + "</tbody></table>" +
+    `<p class="note">Of households with savings at 65, the share whose cumulative out-of-pocket care costs reach those savings. No investment returns or income are counted, so this is a measure of exposure, not a forecast.</p>`;
+}
+
+$("check-table").innerHTML = "<table><thead><tr><th>Sex</th><th>Fitted model</th><th>After calibration</th><th>US life table 2023</th></tr></thead><tbody>" +
+  D.mortality_check.map(r => `<tr><td>${r.sex}</td><td>${r.fitted}</td><td>${r.model}</td><td>${r.life_table}</td></tr>`).join("") + "</tbody></table>";
+$("foot").innerHTML = `Sources: ${D.meta.sources}. ${D.meta.dollars}. From the paper <em>${D.meta.paper}</em> by ${D.meta.author}; code at <a href="${D.meta.repository}">${D.meta.repository.replace("https://","")}</a>. Everything here is an aggregate model output; no survey microdata is included or sent anywhere. Updated ${D.meta.generated}.`;
+draw();
+})();
+</script>
+
+</body>
+</html>
