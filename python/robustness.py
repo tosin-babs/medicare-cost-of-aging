@@ -102,7 +102,15 @@ def headline(model, bundle, label, sample, disc=config.PRIMARY_DISCOUNT, **kw):
 
 
 def medicare_dict(t3d, col="medicare_annual"):
-    return {(r["state"], r["age_band"]): r[col] for _, r in t3d.iterrows()}
+    d = {(r["state"], r["age_band"]): r[col] for _, r in t3d.iterrows()}
+    # A variant can empty a state: pooling the nursing home into L leaves no N
+    # observations, and no life can then occupy N. Fill so the bundle still has
+    # every cell the simulation looks up.
+    for st in config.LIVE_STATES:
+        for band in costmod.BANDS:
+            if (st, band) not in d:
+                d[(st, band)] = d.get(("L", band), max(v for (_, b), v in d.items() if b == band))
+    return d
 
 
 def with_medicare(bundle, medicare):
@@ -152,7 +160,15 @@ def refit(label, raw, sample_cols, adl_ltc_min=None, nursing_home_is_l=False,
         w = pop.person_weight(long).groupby(long["hhidpn"]).mean()
         iv = iv.assign(weight=iv["hhidpn"].map(w).fillna(0.0))
         iv = iv[iv["weight"] > 0]
-    m = MultiStateMarkov(len(config.STATES), ALLOWED, covariates=["female"],
+    allowed = ALLOWED
+    if nursing_home_is_l:
+        # The variant folds the nursing home into L, so N has no observations.
+        # Estimating its intensities from nothing sends them to extreme values
+        # and the matrix exponential then returns negative occupancy; drop the
+        # state from the model instead.
+        n = config.STATES.index("N")
+        allowed = [(j, k) for j, k in ALLOWED if n not in (j, k)]
+    m = MultiStateMarkov(len(config.STATES), allowed, covariates=["female"],
                          age_knots=config.AGE_KNOTS, max_piece=config.MAX_PIECE_YEARS)
     m.fit(iv, weight_col="weight" if weighted else None)
     print(f"  refit {label}: {len(iv):,} observations, loglik {m.loglik_:,.1f}, "
@@ -178,11 +194,20 @@ def main():
     bundle = sim.decedent_adjustment(model, mix, sim.cost_bundle())
     rows = []
 
+    def save():
+        """A single-variant run (P5_ROBUST_ONLY) merges into the existing table
+        instead of replacing it."""
+        df = pd.DataFrame(rows)
+        if ONLY and OUT.exists():
+            old = pd.read_csv(OUT)
+            df = pd.concat([old[~old["variant"].isin(df["variant"])], df], ignore_index=True)
+        df.to_csv(OUT, index=False)
+
     def add(*a, **kw):
         if ONLY and ONLY not in a[2]:
             return
         rows.append(headline(*a, **kw))
-        pd.DataFrame(rows).to_csv(OUT, index=False)
+        save()
 
     add(model, bundle, "baseline", sample)
     for d in (0.02, 0.04):
@@ -255,7 +280,7 @@ def main():
                 continue
             cal, vsample, vbundle = refit(lab, raw, None, **kw)
             rows.append(headline(cal, vbundle, lab, vsample))
-            pd.DataFrame(rows).to_csv(OUT, index=False)
+            save()
     print(f"\nwrote {OUT.name} with {len(rows)} variants")
 
 

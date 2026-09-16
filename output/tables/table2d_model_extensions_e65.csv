@@ -1,0 +1,11 @@
+extension,sex,level,e65_from_C
+income,male,low,13.932712291514235
+income,male,middle,16.66242163389003
+income,male,high,18.588457890412325
+income,female,low,17.496137383779327
+income,female,middle,20.308004879247846
+income,female,high,22.201736241068616
+duration,male,new to state,14.650358813129076
+duration,male,in state at previous interview,16.5348946703386
+duration,female,new to state,17.54274855608894
+duration,female,in state at previous interview,19.41277865013389

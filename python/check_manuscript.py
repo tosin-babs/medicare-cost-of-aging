@@ -323,6 +323,16 @@ def robustness_checks():
                          f"and {r.loc['income meets 0% of out-of-pocket', 'female_ever_medicaid_pct']:.0f}%"),
         "rob asset limit": (f"raises it to {r.loc['Medicaid asset limit $10,000', 'male_ever_medicaid_pct']:.0f}% and "
                             f"{r.loc['Medicaid asset limit $10,000', 'female_ever_medicaid_pct']:.0f}%"),
+        **({} if not any("nursing home not its own state" in v for v in r.index) else {
+            "rob refit nh": (
+                f"gives {d(r.loc['nursing home not its own state (refit)', 'male_pv_oop']) } and "
+                f"{d(r.loc['nursing home not its own state (refit)', 'female_pv_oop'])} with CVaR95 "
+                f"{d(r.loc['nursing home not its own state (refit)', 'male_cvar95_oop'])} and "
+                f"{d(r.loc['nursing home not its own state (refit)', 'female_cvar95_oop'])}"),
+            "rob refit nh ltc": (
+                f"{r.loc['nursing home not its own state (refit)', 'male_ever_ltc_pct']:.0f}% and "
+                f"{r.loc['nursing home not its own state (refit)', 'female_ever_ltc_pct']:.0f}%"),
+        }),
         "rob sex-only": (f"to {r.loc['sex-only model', 'male_ever_ltc_pct']:.0f}% and "
                          f"{r.loc['sex-only model', 'female_ever_ltc_pct']:.0f}% and CVaR95 to "
                          f"{m('sex-only model', 'male_cvar95_oop')} and {m('sex-only model', 'female_cvar95_oop')}"),
@@ -330,11 +340,47 @@ def robustness_checks():
     return c
 
 
+def extension_checks():
+    f = T / "table2d_model_extensions.csv"
+    if not f.exists():
+        return {}
+    t = pd.read_csv(f)
+    e65 = pd.read_csv(T / "table2d_model_extensions_e65.csv").set_index(["extension", "sex", "level"])
+    lr = t.groupby("extension")[["lr_test_vs_full", "df"]].first()
+    hr = t.set_index(["extension", "transition", "term"])["hazard_ratio"]
+    c = {}
+    if "income" in lr.index:
+        c["ext income lr"] = f"{lr.loc['income', 'lr_test_vs_full']:,.1f} on {int(lr.loc['income', 'df'])} degrees of freedom"
+        c["ext income hr"] = (f"from H to D (hazard ratio {hr[('income', 'H to D', 'low_income')]:.2f}), from C to D "
+                              f"({hr[('income', 'C to D', 'low_income')]:.2f}), from C to a nursing home "
+                              f"({hr[('income', 'C to N', 'low_income')]:.2f}) and from C to death "
+                              f"({hr[('income', 'C to X', 'low_income')]:.2f})")
+        c["ext income high"] = (f"to {hr[('income', 'C to N', 'high_income')]:.2f} and "
+                                f"{hr[('income', 'C to X', 'high_income')]:.2f}")
+        c["ext income e65"] = (f"expect {e65.loc[('income', 'male', 'low'), 'e65_from_C']:.1f} years and one in the "
+                               f"highest {e65.loc[('income', 'male', 'high'), 'e65_from_C']:.1f}, and a woman "
+                               f"{e65.loc[('income', 'female', 'low'), 'e65_from_C']:.1f} against "
+                               f"{e65.loc[('income', 'female', 'high'), 'e65_from_C']:.1f}")
+    if "duration" in lr.index:
+        c["ext duration lr"] = (f"{lr.loc['duration', 'lr_test_vs_full']:,.1f} on "
+                                f"{int(lr.loc['duration', 'df'])} degrees of freedom")
+        c["ext duration hr"] = (f"from C to D is {hr[('duration', 'C to D', 'same_state_prev')]:.2f} of the intensity "
+                                f"for a recent entrant, from D back to C {hr[('duration', 'D to C', 'same_state_prev')]:.2f}, "
+                                f"from L to D {hr[('duration', 'L to D', 'same_state_prev')]:.2f} and from a nursing home "
+                                f"back to D {hr[('duration', 'N to D', 'same_state_prev')]:.2f}")
+        row = t[(t["extension"] == "duration") & (t["transition"] == "N to X")].iloc[0]
+        c["ext duration death"] = (f"unchanged by the duration proxy (hazard ratio {row['hazard_ratio']:.2f}, interval "
+                                   f"{row['hr_lo']:.2f} to {row['hr_hi']:.2f})")
+        c["ext duration other"] = (f"({hr[('duration', 'L to X', 'same_state_prev')]:.2f}) and from disability "
+                                   f"({hr[('duration', 'D to X', 'same_state_prev')]:.2f})")
+    return c
+
+
 def load():
     t1 = pd.read_csv(T / "table1_sample.csv").set_index("quantity")["value"]
     c = {}
     for fn in (lambda: sample_checks(t1), cost_checks, model_checks, validation_checks,
-               result_checks, scenario_checks, robustness_checks):
+               result_checks, scenario_checks, robustness_checks, extension_checks):
         c.update(fn())
     return c
 

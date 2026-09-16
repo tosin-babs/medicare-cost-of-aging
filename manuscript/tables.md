@@ -446,10 +446,77 @@
 | income meets 20% of out-of-pocket | 18.3 | 20.7 | 44% | 58% | 14% | 22% | $154,778 | $171,775 | $35,141 | $43,829 | $186,553 | $235,836 | $2,161 |
 | Medicaid asset limit $10,000 | 18.3 | 20.7 | 44% | 58% | 17% | 26% | $154,778 | $171,775 | $34,950 | $43,427 | $185,384 | $234,139 | $2,144 |
 | sex-only model | 18.3 | 20.8 | 47% | 61% | 15% | 24% | $155,574 | $172,943 | $35,760 | $45,178 | $191,226 | $246,060 | $2,486 |
+| nursing home not its own state (refit) | 18.3 | 20.7 | 46% | 61% | 16% | 24% | $155,278 | $172,837 | $36,104 | $44,809 | $199,397 | $247,942 | $2,476 |
 
 
 # Appendix tables
 
+
+**Table A1.** Extensions to the transition model: likelihood-ratio tests against the main model.
+
+*duration: in the same state at the previous interview, a coarse proxy for duration in state and a first-order check on the Markov assumption. income: low and high household income tertile against middle. Each extension re-estimates the model; only those listed were run.*
+
+| Extension | LR statistic | df |
+|---|---:|---:|
+| duration | 3,046.3 | 12 |
+| income | 1,789.6 | 24 |
+
+| Extension | Transition | Term | Hazard ratio | 95% low | 95% high |
+|---|---:|---:|---:|---:|---:|
+| income | H to C | low_income | 1.01 | 0.94 | 1.09 |
+| income | H to C | high_income | 0.93 | 0.87 | 1.00 |
+| income | H to D | low_income | 1.72 | 1.35 | 2.20 |
+| income | H to D | high_income | 0.88 | 0.67 | 1.17 |
+| income | H to X | low_income | 1.37 | 0.85 | 2.21 |
+| income | H to X | high_income | 0.61 | 0.35 | 1.08 |
+| income | C to D | low_income | 1.43 | 1.36 | 1.50 |
+| income | C to D | high_income | 0.81 | 0.77 | 0.86 |
+| income | C to L | low_income | 12.68 | 1.03 | 156.28 |
+| income | C to L | high_income | 0.01 | 0.00 | 7,270.80 |
+| income | C to N | low_income | 1.66 | 1.25 | 2.22 |
+| income | C to N | high_income | 1.19 | 0.91 | 1.57 |
+| income | C to X | low_income | 1.41 | 1.30 | 1.54 |
+| income | C to X | high_income | 0.73 | 0.66 | 0.80 |
+| income | D to H | low_income | 0.85 | 0.66 | 1.09 |
+| income | D to H | high_income | 1.36 | 1.00 | 1.83 |
+| income | D to C | low_income | 0.87 | 0.83 | 0.92 |
+| income | D to C | high_income | 1.13 | 1.05 | 1.20 |
+| income | D to L | low_income | 1.14 | 1.04 | 1.25 |
+| income | D to L | high_income | 0.93 | 0.83 | 1.04 |
+| income | D to N | low_income | 1.00 | 0.75 | 1.34 |
+| income | D to N | high_income | 0.77 | 0.55 | 1.08 |
+| income | D to X | low_income | 1.30 | 1.09 | 1.55 |
+| income | D to X | high_income | 1.01 | 0.81 | 1.25 |
+| income | L to D | low_income | 1.01 | 0.91 | 1.11 |
+| income | L to D | high_income | 1.02 | 0.88 | 1.19 |
+| income | L to N | low_income | 1.38 | 1.07 | 1.78 |
+| income | L to N | high_income | 0.85 | 0.60 | 1.20 |
+| income | L to X | low_income | 0.82 | 0.73 | 0.92 |
+| income | L to X | high_income | 0.96 | 0.84 | 1.10 |
+| income | N to D | low_income | 0.50 | 0.35 | 0.73 |
+| income | N to D | high_income | 1.59 | 1.09 | 2.32 |
+| income | N to L | low_income | 0.88 | 0.48 | 1.61 |
+| income | N to L | high_income | 1.28 | 0.55 | 2.99 |
+| income | N to X | low_income | 0.97 | 0.89 | 1.07 |
+| income | N to X | high_income | 1.04 | 0.92 | 1.17 |
+| duration | H to C | same_state_prev | 0.96 | 0.90 | 1.03 |
+| duration | H to D | same_state_prev | 0.47 | 0.38 | 0.59 |
+| duration | H to X | same_state_prev | 1.14 | 0.65 | 2.00 |
+| duration | C to D | same_state_prev | 0.41 | 0.39 | 0.42 |
+| duration | C to L | same_state_prev | 0.05 | 0.01 | 0.22 |
+| duration | C to N | same_state_prev | 0.68 | 0.53 | 0.87 |
+| duration | C to X | same_state_prev | 0.77 | 0.71 | 0.84 |
+| duration | D to H | same_state_prev | 0.27 | 0.21 | 0.36 |
+| duration | D to C | same_state_prev | 0.48 | 0.45 | 0.50 |
+| duration | D to L | same_state_prev | 0.90 | 0.84 | 0.97 |
+| duration | D to N | same_state_prev | 0.91 | 0.71 | 1.16 |
+| duration | D to X | same_state_prev | 0.98 | 0.84 | 1.13 |
+| duration | L to D | same_state_prev | 0.41 | 0.37 | 0.45 |
+| duration | L to N | same_state_prev | 0.74 | 0.60 | 0.90 |
+| duration | L to X | same_state_prev | 1.00 | 0.91 | 1.10 |
+| duration | N to D | same_state_prev | 0.22 | 0.14 | 0.33 |
+| duration | N to L | same_state_prev | 0.97 | 0.58 | 1.63 |
+| duration | N to X | same_state_prev | 1.03 | 0.95 | 1.12 |
 
 **Table A2.** Observations by state at the start (rows) and at the end (columns).
 

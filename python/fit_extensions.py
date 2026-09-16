@@ -129,10 +129,12 @@ def combine():
         if f.exists():
             parts.append(pd.read_csv(f))
             e65.append(pd.read_csv(config.TABLES / f"table2d_extension_{name}_e65.csv"))
-    if len(parts) == len(EXT):
+    if parts:
         pd.concat(parts).to_csv(config.TABLES / "table2d_model_extensions.csv", index=False)
         pd.concat(e65).to_csv(config.TABLES / "table2d_model_extensions_e65.csv", index=False)
-        print("wrote table2d_model_extensions.csv")
+        have = sorted({n for n in EXT if (config.TABLES / f"table2d_extension_{n}.csv").exists()})
+        print(f"wrote table2d_model_extensions.csv with {len(parts)} of {len(EXT)} extensions: "
+              f"{', '.join(have)}")
 
 
 def main():

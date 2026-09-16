@@ -279,10 +279,14 @@ def main():
     if ext.exists():
         t = pd.read_csv(ext)
         lr = t.groupby("extension").agg(lr=("lr_test_vs_full", "first"), df=("df", "first")).reset_index()
+        notes = {"income": "income: low and high household income tertile against middle.",
+                 "duration": "duration: in the same state at the previous interview, a coarse proxy for duration in "
+                             "state and a first-order check on the Markov assumption.",
+                 "age2": "age2: a quadratic age term on top of the spline.",
+                 "period": "period: calendar year, per decade from 2010."}
+        note = " ".join(notes[e] for e in lr["extension"] if e in notes)
         parts += [caption("A1", "Extensions to the transition model: likelihood-ratio tests against the main model.",
-                          "income: low and high household income tertile against middle. duration: in the same state "
-                          "at the previous interview, a first-order check on the Markov assumption. age2: a quadratic "
-                          "age term on top of the spline. period: calendar year, per decade from 2010."),
+                          note + " Each extension re-estimates the model; only those listed were run."),
                   render(lr, ["extension", "lr", "df"], [None, num(1), num(0)], ["Extension", "LR statistic", "df"]),
                   "",
                   render(t, ["extension", "transition", "term", "hazard_ratio", "hr_lo", "hr_hi"],
