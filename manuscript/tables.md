@@ -463,7 +463,7 @@
 | Extension | LR statistic | df |
 |---|---:|---:|
 | duration | 3,046.3 | 18 |
-| income | 1,789.6 | 36 |
+| income | 1,789.7 | 36 |
 | period | 354.8 | 18 |
 
 | Extension | Transition | Term | Hazard ratio | 95% low | 95% high |
@@ -472,18 +472,18 @@
 | income | H to C | high_income | 0.93 | 0.87 | 1.00 |
 | income | H to D | low_income | 1.72 | 1.35 | 2.20 |
 | income | H to D | high_income | 0.88 | 0.67 | 1.17 |
-| income | H to X | low_income | 1.37 | 0.85 | 2.21 |
-| income | H to X | high_income | 0.61 | 0.35 | 1.08 |
+| income | H to X | low_income | 1.37 | 0.85 | 2.20 |
+| income | H to X | high_income | 0.61 | 0.34 | 1.08 |
 | income | C to D | low_income | 1.43 | 1.36 | 1.50 |
 | income | C to D | high_income | 0.81 | 0.77 | 0.86 |
-| income | C to L | low_income | 12.68 | 1.03 | 156.28 |
-| income | C to L | high_income | 0.01 | 0.00 | 7,270.80 |
-| income | C to N | low_income | 1.66 | 1.25 | 2.22 |
+| income | C to L | low_income | 12.59 | 1.07 | 148.23 |
+| income | C to L | high_income | 0.00 | 0.00 | 2,888,720.28 |
+| income | C to N | low_income | 1.66 | 1.25 | 2.21 |
 | income | C to N | high_income | 1.19 | 0.91 | 1.57 |
 | income | C to X | low_income | 1.41 | 1.30 | 1.54 |
 | income | C to X | high_income | 0.73 | 0.66 | 0.80 |
 | income | D to H | low_income | 0.85 | 0.66 | 1.09 |
-| income | D to H | high_income | 1.36 | 1.00 | 1.83 |
+| income | D to H | high_income | 1.36 | 1.00 | 1.84 |
 | income | D to C | low_income | 0.87 | 0.83 | 0.92 |
 | income | D to C | high_income | 1.13 | 1.05 | 1.20 |
 | income | D to L | low_income | 1.14 | 1.04 | 1.25 |
@@ -495,13 +495,13 @@
 | income | L to D | low_income | 1.01 | 0.91 | 1.11 |
 | income | L to D | high_income | 1.02 | 0.88 | 1.19 |
 | income | L to N | low_income | 1.38 | 1.07 | 1.78 |
-| income | L to N | high_income | 0.85 | 0.60 | 1.20 |
+| income | L to N | high_income | 0.84 | 0.60 | 1.20 |
 | income | L to X | low_income | 0.82 | 0.73 | 0.92 |
 | income | L to X | high_income | 0.96 | 0.84 | 1.10 |
 | income | N to D | low_income | 0.50 | 0.35 | 0.73 |
 | income | N to D | high_income | 1.59 | 1.09 | 2.32 |
-| income | N to L | low_income | 0.88 | 0.48 | 1.61 |
-| income | N to L | high_income | 1.28 | 0.55 | 2.99 |
+| income | N to L | low_income | 0.87 | 0.48 | 1.60 |
+| income | N to L | high_income | 1.27 | 0.54 | 2.97 |
 | income | N to X | low_income | 0.97 | 0.89 | 1.07 |
 | income | N to X | high_income | 1.04 | 0.92 | 1.17 |
 | duration | H to C | same_state_prev | 0.96 | 0.90 | 1.03 |

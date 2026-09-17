@@ -4,7 +4,7 @@
 
 ¹ Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA. obabalola4@student.gsu.edu
 
-**Word count.** 7,589 excluding abstract, tables, figure captions and references.
+**Word count.** 7,663 excluding abstract, tables, figure captions and references.
 
 ---
 
@@ -217,9 +217,9 @@ Four further refits change the definition of long-term-care need, the sample per
 
 ### 6.9 Extensions to the transition model
 
-Table A1 reports extensions that add a term to every one of the 18 intensities of the full model and test it by likelihood ratio. Each starts from the main model's estimates with the new terms at zero, and the table records whether the optimizer converged.
+Table A1 reports extensions that add a term to every one of the 18 intensities of the full model and test it by likelihood ratio. Each starts from the main model's estimates with the new terms at zero, and the table records whether the optimizer converged. Three are reported. A fourth, a quadratic in age on top of the spline, is not: the first attempt built the term from age at the interval midpoint, which for a death row carries the date of death, and the re-estimation with age at the start of the interval had not converged after 29 hours and was stopped. The spline already lets the intensities bend at 70 and 85, so little rests on it.
 
-**Income.** Adding indicators for the lowest and highest tertile of household income improves the likelihood by 1,789.6 on 36 degrees of freedom. Low income raises the intensity of moving from H to D (hazard ratio 1.72), from C to D (1.43), from C to a nursing home (1.66) and from C to death (1.41); high income lowers the last two to 1.19 and 0.73. The effect on life expectancy is large: starting from chronic illness at 65, a man in the lowest tertile can expect 13.9 years and one in the highest 18.6, and a woman 17.5 against 22.2. The main model has no income term, so its income results in Section 6.5 carry differences in composition, costs and Medicaid but not in health dynamics, and the 2-year gap in life expectancy they show is less than half of the 4.7 years this extension implies.
+**Income.** Adding indicators for the lowest and highest tertile of household income improves the likelihood by 1,789.7 on 36 degrees of freedom. Low income raises the intensity of moving from H to D (hazard ratio 1.72), from C to D (1.43), from C to a nursing home (1.66) and from C to death (1.41); high income lowers the last two to 1.19 and 0.73. The effect on life expectancy is large: starting from chronic illness at 65, a man in the lowest tertile can expect 13.9 years and one in the highest 18.6, and a woman 17.5 against 22.2. The main model has no income term, so its income results in Section 6.5 carry differences in composition, costs and Medicaid but not in health dynamics, and the 2-year gap in life expectancy they show is less than half of the 4.7 years this extension implies.
 
 **Duration.** Adding an indicator for having been in the same state at the previous interview, a coarse proxy for duration in state, improves the likelihood by 3,046.3 on 18 degrees of freedom, the largest improvement of any extension tried. Movements between live states are strongly duration-dependent in the expected direction: for someone already in the state two years earlier, the intensity of moving from C to D is 0.41 of the intensity for a recent entrant, from D back to C 0.48, from L to D 0.41 and from a nursing home back to D 0.22. Transitions happen soon after a change, and a Markov model spreads them evenly.
 
