@@ -447,6 +447,10 @@
 | Medicaid asset limit $10,000 | 18.3 | 20.7 | 44% | 58% | 17% | 26% | $154,778 | $171,775 | $34,950 | $43,427 | $185,384 | $234,139 | $2,144 |
 | sex-only model | 18.3 | 20.8 | 47% | 61% | 15% | 24% | $155,574 | $172,943 | $35,760 | $45,178 | $191,226 | $246,060 | $2,486 |
 | nursing home not its own state (refit) | 18.3 | 20.7 | 46% | 61% | 16% | 24% | $155,278 | $172,837 | $36,104 | $44,809 | $199,397 | $247,942 | $2,476 |
+| weighted likelihood (refit) | 18.3 | 20.7 | 44% | 59% | 15% | 23% | $155,075 | $172,167 | $35,274 | $44,275 | $187,408 | $240,359 | $2,308 |
+| dementia counts as long-term care (refit) | 18.3 | 20.8 | 57% | 69% | 17% | 26% | $155,783 | $172,746 | $35,489 | $45,302 | $188,082 | $251,586 | $2,353 |
+| waves 9-16 only (refit) | 18.2 | 20.7 | 45% | 58% | 16% | 23% | $155,369 | $172,640 | $34,481 | $42,606 | $183,424 | $232,429 | $2,159 |
+| L at 2+ ADLs (refit) | 18.3 | 20.8 | 58% | 71% | 17% | 26% | $155,626 | $173,040 | $35,599 | $44,382 | $191,305 | $240,045 | $2,442 |
 
 
 # Appendix tables
@@ -454,12 +458,13 @@
 
 **Table A1.** Extensions to the transition model: likelihood-ratio tests against the main model.
 
-*duration: in the same state at the previous interview, a coarse proxy for duration in state and a first-order check on the Markov assumption. income: low and high household income tertile against middle. Each extension re-estimates the model; only those listed were run.*
+*duration: in the same state at the previous interview, a coarse proxy for duration in state and a first-order check on the Markov assumption. income: low and high household income tertile against middle. period: calendar year, per decade from 2010. Each extension re-estimates the model; only those listed were run.*
 
 | Extension | LR statistic | df |
 |---|---:|---:|
-| duration | 3,046.3 | 12 |
-| income | 1,789.6 | 24 |
+| duration | 3,046.3 | 18 |
+| income | 1,789.6 | 36 |
+| period | 354.8 | 18 |
 
 | Extension | Transition | Term | Hazard ratio | 95% low | 95% high |
 |---|---:|---:|---:|---:|---:|
@@ -517,6 +522,24 @@
 | duration | N to D | same_state_prev | 0.22 | 0.14 | 0.33 |
 | duration | N to L | same_state_prev | 0.97 | 0.58 | 1.63 |
 | duration | N to X | same_state_prev | 1.03 | 0.95 | 1.12 |
+| period | H to C | period | 0.98 | 0.94 | 1.02 |
+| period | H to D | period | 0.79 | 0.67 | 0.92 |
+| period | H to X | period | 0.96 | 0.71 | 1.32 |
+| period | C to D | period | 0.95 | 0.92 | 0.97 |
+| period | C to L | period | 0.69 | 0.46 | 1.04 |
+| period | C to N | period | 0.70 | 0.61 | 0.81 |
+| period | C to X | period | 0.87 | 0.82 | 0.92 |
+| period | D to H | period | 0.50 | 0.43 | 0.59 |
+| period | D to C | period | 0.95 | 0.92 | 0.99 |
+| period | D to L | period | 1.05 | 1.00 | 1.11 |
+| period | D to N | period | 0.70 | 0.59 | 0.84 |
+| period | D to X | period | 1.13 | 1.01 | 1.27 |
+| period | L to D | period | 0.97 | 0.91 | 1.03 |
+| period | L to N | period | 0.67 | 0.58 | 0.78 |
+| period | L to X | period | 1.06 | 0.99 | 1.14 |
+| period | N to D | period | 1.20 | 0.90 | 1.60 |
+| period | N to L | period | 1.64 | 0.91 | 2.93 |
+| period | N to X | period | 1.07 | 1.00 | 1.15 |
 
 **Table A2.** Observations by state at the start (rows) and at the end (columns).
 

@@ -5,7 +5,13 @@ income,male,high,18.588457890412325
 income,female,low,17.496137383779327
 income,female,middle,20.308004879247846
 income,female,high,22.201736241068616
-duration,male,new to state,14.650358813129076
-duration,male,in state at previous interview,16.5348946703386
-duration,female,new to state,17.54274855608894
-duration,female,in state at previous interview,19.41277865013389
+duration,male,new to state,14.650357340445026
+duration,male,in state at previous interview,16.534899476545807
+duration,female,new to state,17.54275309989643
+duration,female,in state at previous interview,19.41278342451707
+period,male,1998,15.808751691796456
+period,male,2010,16.473959982744727
+period,male,2022,17.035960148608478
+period,female,1998,18.78123584839612
+period,female,2010,19.439608728580563
+period,female,2022,19.947834700156907

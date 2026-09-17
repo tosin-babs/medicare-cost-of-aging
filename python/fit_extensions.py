@@ -24,6 +24,7 @@ table2d_model_extensions.csv.
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 
@@ -35,6 +36,7 @@ from fit_transitions import ALLOWED, COV_FULL, S, life_expectancy
 from multistate import MultiStateMarkov
 from population import person_weight
 
+MAXITER = int(os.environ.get("P5_FIT_MAXITER", 4000))
 EXT = {"income": ["low_income", "high_income"], "duration": ["same_state_prev"],
        "age2": ["age2"], "period": ["period"]}
 
@@ -69,17 +71,31 @@ def extended_intervals():
     iv = iv.merge(pw[keep], on=["hhidpn", "t_start"], how="left")
     assert iv["period"].notna().all(), "interval start not matched to an interview"
     iv["same_state_prev"] = iv["same_state_prev"].fillna(0)
-    iv["age2"] = ((iv["age_start"] + iv["duration"] / 2 - 65) / 10) ** 2
+    # Age at the start of the interval: the midpoint would use the duration,
+    # which for a death row runs to the death date and so carries the outcome.
+    iv["age2"] = ((iv["age_start"] - 65) / 10) ** 2
     return iv
 
 
-def fit_one(name, iv, full_loglik):
+def warm_start(full, n_new):
+    """The full model's estimates with the new terms at zero, so the fit starts
+    at the nested model rather than from crude rates."""
+    block = len(full["theta"]) // len(full["allowed"])
+    th = np.asarray(full["theta"], float).reshape(len(full["allowed"]), block)
+    return np.hstack([th, np.zeros((th.shape[0], n_new))]).ravel()
+
+
+def fit_one(name, iv, full):
     cov = COV_FULL + EXT[name]
     t0 = time.time()
     m = MultiStateMarkov(len(config.STATES), ALLOWED, covariates=cov, age_knots=config.AGE_KNOTS,
-                         max_piece=config.MAX_PIECE_YEARS).fit(iv, robust_se=False)
-    print(f"  {name}: {m.method_}, converged {m.converged_}, loglik {m.loglik_:,.1f}, "
+                         max_piece=config.MAX_PIECE_YEARS)
+    m.fit(iv, init=warm_start(full, len(EXT[name])), maxiter=MAXITER, robust_se=False)
+    print(f"  {name}: {m.method_}, converged {m.converged_} ({m.message_}), loglik {m.loglik_:,.1f}, "
           f"{len(m.theta_)} params, {time.time() - t0:.0f}s", flush=True)
+    if m.at_bound_:
+        print(f"    {len(m.at_bound_)} parameters at a bound: {m.at_bound_[:6]}", flush=True)
+    full_loglik = full["loglik"]
     tab = m.coef_table()
     tab["transition"] = tab["parameter"].str.extract(r"q(\d)(\d)").apply(
         lambda r: f"{S[int(r[0])]} to {S[int(r[1])]}", axis=1)
@@ -87,8 +103,9 @@ def fit_one(name, iv, full_loglik):
     tab = tab[tab["term"].isin(EXT[name])].copy()
     tab["extension"] = name
     tab["loglik"] = m.loglik_
+    tab["converged"] = m.converged_
     tab["lr_test_vs_full"] = 2 * (m.loglik_ - full_loglik)
-    tab["df"] = 12 * len(EXT[name])
+    tab["df"] = len(m.theta_) - len(full["theta"])     # one term per allowed transition
     # life expectancy at 65 for reference men and women at each level of the
     # new term (age2 and duration enter through the intensities directly)
     levels = {"income": {"low": [1, 0], "middle": [0, 0], "high": [0, 1]},
@@ -142,9 +159,10 @@ def main():
     iv = extended_intervals()
     print(f"{len(iv):,} intervals; low/high income {iv['low_income'].mean():.3f}/{iv['high_income'].mean():.3f}; "
           f"same state at previous interview {iv['same_state_prev'].mean():.3f}", flush=True)
-    full_loglik = pd.read_pickle(config.DERIVED / "msm_full.pkl")["loglik"]
+    full = pd.read_pickle(config.DERIVED / "msm_full.pkl")
+    assert list(full["allowed"]) == list(ALLOWED) and list(full["covariates"]) == COV_FULL
     for name in names:
-        tab, e65 = fit_one(name, iv, full_loglik)
+        tab, e65 = fit_one(name, iv, full)
         tab.to_csv(config.TABLES / f"table2d_extension_{name}.csv", index=False)
         e65.to_csv(config.TABLES / f"table2d_extension_{name}_e65.csv", index=False)
         with pd.option_context("display.width", 200):

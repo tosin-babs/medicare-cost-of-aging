@@ -118,9 +118,14 @@ def assign_state(long, nursing_home_is_l=None, dementia_is_ltc=False):
     if dementia_is_ltc:
         # Self-respondents with a 27-point cognition score at or below the cut,
         # or a proxy report of dementia or Alzheimer's disease, count as needing
-        # long-term care wherever they live.
+        # long-term care wherever they live. The score is not in wave 16 and the
+        # diagnosis items start in wave 10, so a flag carries forward to later
+        # interviews: otherwise the loss of the score reads as recovery.
         dem = ((long["cog27"] <= config.COG_DEMENTIA_CUT)
                | (long["demen"] == 1) | (long["alzhe"] == 1))
+        order = long.sort_values(["hhidpn", "wave"]).index
+        dem = (dem.loc[order].astype(int).groupby(long.loc[order, "hhidpn"]).cummax()
+               .reindex(long.index).astype(bool))
         state[known & dem & state.isin([0, 1, 2])] = 3
     state[nh] = 3 if nh_is_l else 4
     long["state"] = state

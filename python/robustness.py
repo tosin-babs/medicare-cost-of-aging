@@ -44,6 +44,7 @@ P5_ROBUST_ONLY=<name>.
 
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 
@@ -61,6 +62,7 @@ from multistate import MultiStateMarkov
 N = int(os.environ.get("P5_ROBUST_N", 40_000))
 REFIT = os.environ.get("P5_ROBUST_REFIT", "1") == "1"
 ONLY = os.environ.get("P5_ROBUST_ONLY")
+MAXITER = int(os.environ.get("P5_FIT_MAXITER", 4000))
 OUT = config.TABLES / "table8_robustness.csv"
 
 
@@ -170,9 +172,16 @@ def refit(label, raw, sample_cols, adl_ltc_min=None, nursing_home_is_l=False,
         allowed = [(j, k) for j, k in ALLOWED if n not in (j, k)]
     m = MultiStateMarkov(len(config.STATES), allowed, covariates=["female"],
                          age_knots=config.AGE_KNOTS, max_piece=config.MAX_PIECE_YEARS)
-    m.fit(iv, weight_col="weight" if weighted else None)
+    # Start from the fitted sex-only model where the transitions are the same:
+    # the variants move the state boundaries, not the model's structure.
+    init = None
+    if allowed == ALLOWED:
+        init = pd.read_pickle(config.DERIVED / "msm_full.pkl")["base_theta"]
+    m.fit(iv, init=init, weight_col="weight" if weighted else None, maxiter=MAXITER)
     print(f"  refit {label}: {len(iv):,} observations, loglik {m.loglik_:,.1f}, "
-          f"{m.method_}, converged {m.converged_}", flush=True)
+          f"{m.method_}, converged {m.converged_} ({m.message_})", flush=True)
+    if m.at_bound_:
+        print(f"    {len(m.at_bound_)} parameters at a bound: {m.at_bound_[:6]}", flush=True)
     model = SexOnly(m)
     sample = pop.entry_sample(long)
     mix = pop.entry_mix(sample=sample)
@@ -196,12 +205,14 @@ def main():
 
     def save():
         """A single-variant run (P5_ROBUST_ONLY) merges into the existing table
-        instead of replacing it."""
+        instead of replacing it; the lock lets several such runs share the file."""
         df = pd.DataFrame(rows)
-        if ONLY and OUT.exists():
-            old = pd.read_csv(OUT)
-            df = pd.concat([old[~old["variant"].isin(df["variant"])], df], ignore_index=True)
-        df.to_csv(OUT, index=False)
+        with open(OUT.with_suffix(".lock"), "w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if ONLY and OUT.exists():
+                old = pd.read_csv(OUT)
+                df = pd.concat([old[~old["variant"].isin(df["variant"])], df], ignore_index=True)
+            df.to_csv(OUT, index=False)
 
     def add(*a, **kw):
         if ONLY and ONLY not in a[2]:

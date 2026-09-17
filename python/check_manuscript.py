@@ -279,6 +279,10 @@ def scenario_checks():
     }
 
 
+REFITS = ["nursing home not its own state (refit)", "L at 2+ ADLs (refit)",
+          "dementia counts as long-term care (refit)", "waves 9-16 only (refit)", "weighted likelihood (refit)"]
+
+
 def robustness_checks():
     f = T / "table8_robustness.csv"
     if not f.exists():
@@ -333,6 +337,36 @@ def robustness_checks():
                 f"{r.loc['nursing home not its own state (refit)', 'male_ever_ltc_pct']:.0f}% and "
                 f"{r.loc['nursing home not its own state (refit)', 'female_ever_ltc_pct']:.0f}%"),
         }),
+        **({} if not all(v in r.index for v in REFITS) else {
+            "rob refit ltc share": (
+                f"from {r.loc['sex-only model', 'male_ever_ltc_pct']:.0f}% and "
+                f"{r.loc['sex-only model', 'female_ever_ltc_pct']:.0f}% to "
+                f"{r.loc['L at 2+ ADLs (refit)', 'male_ever_ltc_pct']:.0f}% and "
+                f"{r.loc['L at 2+ ADLs (refit)', 'female_ever_ltc_pct']:.0f}%"),
+            "rob refit dementia share": (
+                f"raises it to {r.loc['dementia counts as long-term care (refit)', 'male_ever_ltc_pct']:.0f}% and "
+                f"{r.loc['dementia counts as long-term care (refit)', 'female_ever_ltc_pct']:.0f}%"),
+            "rob refit money": (
+                f"means of {m('L at 2+ ADLs (refit)', 'male_pv_oop')} and {m('L at 2+ ADLs (refit)', 'female_pv_oop')} "
+                f"at two ADLs and {m('dementia counts as long-term care (refit)', 'male_pv_oop')} and "
+                f"{m('dementia counts as long-term care (refit)', 'female_pv_oop')} with dementia, with CVaR95 of "
+                f"{m('L at 2+ ADLs (refit)', 'male_cvar95_oop')} and {m('L at 2+ ADLs (refit)', 'female_cvar95_oop')}, and "
+                f"{m('dementia counts as long-term care (refit)', 'male_cvar95_oop')} and "
+                f"{m('dementia counts as long-term care (refit)', 'female_cvar95_oop')}"),
+            "rob refit waves": (
+                f"lowers the tail to {m('waves 9-16 only (refit)', 'male_cvar95_oop')} and "
+                f"{m('waves 9-16 only (refit)', 'female_cvar95_oop')}, "
+                f"{100 * (1 - r.loc['waves 9-16 only (refit)', 'male_cvar95_oop'] / r.loc['sex-only model', 'male_cvar95_oop']):.0f}% and "
+                f"{100 * (1 - r.loc['waves 9-16 only (refit)', 'female_cvar95_oop'] / r.loc['sex-only model', 'female_cvar95_oop']):.0f}% below"),
+            "rob refit weighted": (
+                f"gives {m('weighted likelihood (refit)', 'male_pv_oop')} and {m('weighted likelihood (refit)', 'female_pv_oop')} "
+                f"with CVaR95 {m('weighted likelihood (refit)', 'male_cvar95_oop')} and "
+                f"{m('weighted likelihood (refit)', 'female_cvar95_oop')}"),
+            "rob refit spread": (
+                f"within {max(abs(r.loc[v, s + '_pv_oop'] / r.loc['sex-only model', s + '_pv_oop'] - 1) for v in REFITS for s in ('male', 'female')) * 100:.0f}% "
+                f"and CVaR95 within "
+                f"{max(abs(r.loc[v, s + '_cvar95_oop'] / r.loc['sex-only model', s + '_cvar95_oop'] - 1) for v in REFITS for s in ('male', 'female')) * 100:.0f}%"),
+        }),
         "rob sex-only": (f"to {r.loc['sex-only model', 'male_ever_ltc_pct']:.0f}% and "
                          f"{r.loc['sex-only model', 'female_ever_ltc_pct']:.0f}% and CVaR95 to "
                          f"{m('sex-only model', 'male_cvar95_oop')} and {m('sex-only model', 'female_cvar95_oop')}"),
@@ -373,6 +407,23 @@ def extension_checks():
                                    f"{row['hr_lo']:.2f} to {row['hr_hi']:.2f})")
         c["ext duration other"] = (f"({hr[('duration', 'L to X', 'same_state_prev')]:.2f}) and from disability "
                                    f"({hr[('duration', 'D to X', 'same_state_prev')]:.2f})")
+    if "period" in lr.index:
+        c["ext period lr"] = (f"{lr.loc['period', 'lr_test_vs_full']:,.1f} on "
+                              f"{int(lr.loc['period', 'df'])} degrees of freedom")
+        c["ext period nh"] = (f"falls to {hr[('period', 'C to N', 'period')]:.2f} of its level from chronic illness, "
+                              f"{hr[('period', 'D to N', 'period')]:.2f} from disability and "
+                              f"{hr[('period', 'L to N', 'period')]:.2f} from severe disability at home")
+        c["ext period death"] = f"from chronic illness falls to {hr[('period', 'C to X', 'period')]:.2f}"
+        c["ext period other"] = (f"falls, to {hr[('period', 'D to H', 'period')]:.2f}, and deaths from disability and "
+                                 f"from the nursing home become slightly more likely "
+                                 f"({hr[('period', 'D to X', 'period')]:.2f} and {hr[('period', 'N to X', 'period')]:.2f})")
+        c["ext period e65"] = (f"rises from {e65.loc[('period', 'male', '1998'), 'e65_from_C']:.1f} years in 1998 to "
+                               f"{e65.loc[('period', 'male', '2022'), 'e65_from_C']:.1f} in 2022 for men and from "
+                               f"{e65.loc[('period', 'female', '1998'), 'e65_from_C']:.1f} to "
+                               f"{e65.loc[('period', 'female', '2022'), 'e65_from_C']:.1f} for women")
+    if "converged" in t:
+        bad = sorted(set(t.loc[~t["converged"].astype(bool), "extension"]))
+        c["ext all converged"] = "" if not bad else f"NOT CONVERGED: {', '.join(bad)}"
     return c
 
 
