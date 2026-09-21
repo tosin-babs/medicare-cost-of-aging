@@ -5,7 +5,13 @@ authors:
   - family-names: Babalola
     given-names: Oluwatosin Dorcas
     email: obabalola4@student.gsu.edu
-    affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University"
+    affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA"
+  - family-names: Iroko
+    given-names: Oluwakemi Elizabeth
+    affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA"
+  - family-names: Ansah
+    given-names: Doris
+    affiliation: "J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA"
 version: 0.1.0
 license: MIT
 repository-code: "https://github.com/tosin-babs/medicare-cost-of-aging"

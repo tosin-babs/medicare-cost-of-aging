@@ -29,7 +29,7 @@ health at 65, expected years in each health state, lifetime Medicare and \
 out-of-pocket cost, the worst-case tail, and what a Medicare Hospital \
 Insurance shortfall would pass on to households, built on the Health and \
 Retirement Study and the Medicare Current Beneficiary Survey.">
-<meta name="author" content="Oluwatosin Dorcas Babalola">
+<meta name="author" content="Oluwatosin Dorcas Babalola, Oluwakemi Elizabeth Iroko, Doris Ansah">
 <meta property="og:title" content="The Long Road">
 <meta property="og:description" content="What aging costs Medicare and you, \
 health path by health path.">

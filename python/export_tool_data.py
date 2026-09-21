@@ -50,7 +50,7 @@ def main():
                  "sources": "RAND HRS Longitudinal File 1992-2022 (V1); MCBS Cost Supplement PUF 2019, 2021-2023; "
                             "2026 Medicare Trustees Report; NCHS United States Life Tables, 2023",
                  "paper": "Health-State Transitions and the Lifetime Cost of Aging",
-                 "author": "Oluwatosin Dorcas Babalola",
+                 "author": "Oluwatosin Dorcas Babalola, Oluwakemi Elizabeth Iroko, Doris Ansah",
                  "repository": "https://github.com/tosin-babs/medicare-cost-of-aging",
                  "depletion": config.HI_DEPLETION,
                  "payable_path": {str(k): v for k, v in config.HI_PAYABLE_PATH.items()},

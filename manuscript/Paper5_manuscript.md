@@ -1,8 +1,10 @@
 # Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk
 
-**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*
+**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*, **Oluwakemi Elizabeth Iroko**¹, **Doris Ansah**²
 
 ¹ Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA. obabalola4@student.gsu.edu
+
+² J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA.
 
 **Word count.** 7,663 excluding abstract, tables, figure captions and references.
 
@@ -255,7 +257,7 @@ A six-state model fitted to 24 years of HRS panel data, calibrated to current mo
 
 **Ethics.** The analysis uses de-identified public-use survey data and did not require ethical approval.
 
-**CRediT statement.** **Oluwatosin Dorcas Babalola**: conceptualization, methodology, software, formal analysis, data curation, visualization, writing (original draft), writing (review and editing).
+**CRediT statement.** **Oluwatosin Dorcas Babalola**: conceptualization, methodology, software, formal analysis, data curation, visualization, writing (original draft), writing (review and editing). **Oluwakemi Elizabeth Iroko**: roles to be confirmed by the authors. **Doris Ansah**: roles to be confirmed by the authors.
 
 ---
 
