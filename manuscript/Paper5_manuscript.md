@@ -257,7 +257,6 @@ A six-state model fitted to 24 years of HRS panel data, calibrated to current mo
 
 **Ethics.** The analysis uses de-identified public-use survey data and did not require ethical approval.
 
-**CRediT statement.** **Oluwatosin Dorcas Babalola**: conceptualization, methodology, software, formal analysis, data curation, visualization, writing (original draft), writing (review and editing). **Oluwakemi Elizabeth Iroko**: roles to be confirmed by the authors. **Doris Ansah**: roles to be confirmed by the authors.
 
 ---
 
