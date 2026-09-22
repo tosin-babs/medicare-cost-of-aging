@@ -83,8 +83,8 @@ The HRS (Health and Retirement Study) is sponsored by the National Institute on 
 ## Authors
 
 - Oluwatosin Dorcas Babalola, Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA, obabalola4@student.gsu.edu (corresponding)
-- Oluwakemi Elizabeth Iroko, Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA
-- Doris Ansah, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA
+- Oluwakemi Elizabeth Iroko, Department of Chemistry, University of Jos, Jos, Nigeria, Oluwakemi2345@gmail.com
+- Doris Ansah, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, dansah2@student.gsu.edu
 
 ## License
 

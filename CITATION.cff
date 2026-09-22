@@ -8,9 +8,11 @@ authors:
     affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA"
   - family-names: Iroko
     given-names: Oluwakemi Elizabeth
-    affiliation: "Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA"
+    email: Oluwakemi2345@gmail.com
+    affiliation: "Department of Chemistry, University of Jos, Jos, Nigeria"
   - family-names: Ansah
     given-names: Doris
+    email: dansah2@student.gsu.edu
     affiliation: "J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA"
 version: 0.1.0
 license: MIT
