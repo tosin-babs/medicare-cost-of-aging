@@ -76,7 +76,7 @@ transition model and take about an hour each.
 
 ## Citation
 
-Babalola, O. D., Iroko, O. E., & Ansah, D. (2025). *Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk.* Code: https://github.com/tosin-babs/medicare-cost-of-aging
+Babalola, O. D., Iroko, O. E., & Ansah, D. (2026). *Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk.* Code: https://github.com/tosin-babs/medicare-cost-of-aging
 
 The HRS (Health and Retirement Study) is sponsored by the National Institute on Aging (grant numbers NIA U01AG009740 and NIA R01AG073289) and is conducted by the University of Michigan.
 

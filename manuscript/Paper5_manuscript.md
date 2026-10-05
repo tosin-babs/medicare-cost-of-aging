@@ -8,7 +8,7 @@
 
 **Email.** Oluwatosin Dorcas Babalola: obabalola4@student.gsu.edu; Oluwakemi Elizabeth Iroko: Oluwakemi2345@gmail.com; Doris Ansah: dansah2@student.gsu.edu.
 
-**Date.** September 2025.
+**Date.** July 2026.
 
 **Word count.** 7,663 excluding abstract, tables, figure captions and references.
 
