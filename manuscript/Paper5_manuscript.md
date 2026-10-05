@@ -1,14 +1,14 @@
 # Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk
 
-**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*, **Oluwakemi Elizabeth Iroko**², **Doris Ansah**³
+**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*, **Oluwakemi Elizabeth Iroko**², **Doris Ansah**¹
 
-¹ Department of Actuarial Science and Quantitative Risk Analysis and Management, Georgia State University, Atlanta, GA, USA.
+¹ Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA.
 
-² Department of Chemistry, University of Jos, Jos, Nigeria.
-
-³ J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA.
+² Independent researcher.
 
 **Email.** Oluwatosin Dorcas Babalola: obabalola4@student.gsu.edu; Oluwakemi Elizabeth Iroko: Oluwakemi2345@gmail.com; Doris Ansah: dansah2@student.gsu.edu.
+
+**Date.** September 2025.
 
 **Word count.** 7,663 excluding abstract, tables, figure captions and references.
 
@@ -274,7 +274,7 @@ A six-state model fitted to 24 years of HRS panel data, calibrated to current mo
 6. Brown, J. R., & Finkelstein, A. (2008). The interaction of public and private insurance: Medicaid and the long-term care insurance market. *American Economic Review*, 98(3), 1083–1102. doi:10.1257/aer.98.3.1083
 7. Bugliari, D., Birnbaum, D. A., Carroll, J., Hayes, J., Hollister, B., Hurd, M. D., Lee, S., Main, R., Meijer, E., Pantoja, P., & Rohwedder, S. (2025). *RAND HRS Longitudinal File 2022 (V1) Documentation*. Santa Monica, CA: RAND Center for the Study of Aging.
 8. Centers for Medicare & Medicaid Services (2023). *2024 Medicare Parts A & B Premiums and Deductibles*. Fact sheet, 12 October 2023.
-9. Centers for Medicare & Medicaid Services. *Medicare Current Beneficiary Survey Cost Supplement Public Use Files, 2019, 2021, 2022 and 2023*. Accessed September 2026.
+9. Centers for Medicare & Medicaid Services. *Medicare Current Beneficiary Survey Cost Supplement Public Use Files, 2019, 2021, 2022 and 2023*.
 10. Crimmins, E. M., Hayward, M. D., & Saito, Y. (1994). Changing mortality and morbidity rates and the health status and life expectancy of the older population. *Demography*, 31(1), 159–175. doi:10.2307/2061913
 11. De Nardi, M., French, E., & Jones, J. B. (2010). Why do the elderly save? The role of medical expenses. *Journal of Political Economy*, 118(1), 39–75. doi:10.1086/651674
 12. De Nardi, M., French, E., Jones, J. B., & McCauley, J. (2016). Medical spending of the US elderly. *Fiscal Studies*, 37(3–4), 717–747. doi:10.1111/j.1475-5890.2016.12106
@@ -308,4 +308,4 @@ A six-state model fitted to 24 years of HRS panel data, calibrated to current mo
 40. Titman, A. C., & Sharples, L. D. (2010). Model diagnostics for multi-state models. *Statistical Methods in Medical Research*, 19(6), 621–651. doi:10.1177/0962280209105541
 41. van den Hout, A. (2016). *Multi-State Survival Models for Interval-Censored Data*. Boca Raton, FL: Chapman and Hall/CRC. doi:10.1201/9781315374321
 
-*DOIs were verified against the Crossref REST API on 15 September 2026.*
+*DOIs were verified against the Crossref REST API.*
