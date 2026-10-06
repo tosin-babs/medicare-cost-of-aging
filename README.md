@@ -82,8 +82,8 @@ The HRS (Health and Retirement Study) is sponsored by the National Institute on 
 
 ## Authors
 
-- Oluwatosin Dorcas Babalola, Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, obabalola4@student.gsu.edu (corresponding)
-- Oluwakemi Elizabeth Iroko, Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, Oiroko1@student.gsu.edu
+- Oluwatosin Dorcas Babalola, Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, oluwatosinbabalola99@gmail.com (corresponding)
+- Oluwakemi Elizabeth Iroko, Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, Oluwakemi2345@gmail.com
 - Doris Ansah, Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA, dansah2@student.gsu.edu
 
 ## License

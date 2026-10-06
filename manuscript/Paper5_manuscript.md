@@ -4,7 +4,7 @@
 
 ¹ Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA.
 
-**Email.** Oluwatosin Dorcas Babalola: obabalola4@student.gsu.edu; Oluwakemi Elizabeth Iroko: Oiroko1@student.gsu.edu; Doris Ansah: dansah2@student.gsu.edu.
+**Email.** Oluwatosin Dorcas Babalola: oluwatosinbabalola99@gmail.com; Oluwakemi Elizabeth Iroko: Oluwakemi2345@gmail.com; Doris Ansah: dansah2@student.gsu.edu.
 
 **Date.** July 2026.
 
