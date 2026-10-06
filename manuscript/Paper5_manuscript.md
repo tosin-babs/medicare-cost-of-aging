@@ -1,12 +1,10 @@
 # Health-State Transitions and the Lifetime Cost of Aging: A Multi-State Actuarial Model of Medicare Spending and Household Out-of-Pocket Tail Risk
 
-**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*, **Oluwakemi Elizabeth Iroko**², **Doris Ansah**¹
+**Oluwatosin Dorcas Babalola**¹ *(corresponding author)*, **Oluwakemi Elizabeth Iroko**¹, **Doris Ansah**¹
 
 ¹ Maurice R. Greenberg School of Risk Science, J. Mack Robinson College of Business, Georgia State University, Atlanta, GA, USA.
 
-² Independent researcher.
-
-**Email.** Oluwatosin Dorcas Babalola: obabalola4@student.gsu.edu; Oluwakemi Elizabeth Iroko: Oluwakemi2345@gmail.com; Doris Ansah: dansah2@student.gsu.edu.
+**Email.** Oluwatosin Dorcas Babalola: obabalola4@student.gsu.edu; Oluwakemi Elizabeth Iroko: Oiroko1@student.gsu.edu; Doris Ansah: dansah2@student.gsu.edu.
 
 **Date.** July 2026.
 
